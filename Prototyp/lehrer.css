@@ -1,76 +1,1067 @@
-* { box-sizing: border-box; }
 
-body { font-family: sans-serif; margin: 0; }
+@import url("farben.css");
 
-/* ===== Header über die ganze Seite ===== */
+/* ==========================================
+   LWL – LEHRERWUNSCHLISTE
+   Gemeinsames Stylesheet für:
+   1. Lehrer-Ansicht
+   2. Profil / Kompetenzen
+   3. Wünsche bearbeiten
+   ========================================== */
+
+
+/* ==========================================
+   1. GRUNDEINSTELLUNGEN
+   ========================================== */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-family: -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Inter, Arial, sans-serif;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--farbe-hintergrund);
+    color: var(--farbe-text);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        color 0.2s ease;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid var(--farbe-fokus);
+    outline-offset: 3px;
+}
+
+
+/* ==========================================
+   2. TOPBAR – ALLE SEITEN
+   ========================================== */
+
 header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 24px;
-  border-bottom: 1px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+
+    width: 100%;
+    min-height: 88px;
+
+    padding: 18px max(
+        28px,
+        calc((100vw - 1100px) / 2)
+    );
+
+    background: var(--farbe-oberflaeche);
+    border-bottom: 1px solid var(--farbe-rahmen);
 }
+
+/* LOGO */
+
 .logo {
-  width: 120px;
-  height: 40px;
-  border: 1px dashed #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.8em;
-}
-header .info { flex: 1; }
-header nav a { margin-right: 16px; }
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-/* ===== Inhalt ===== */
-main { padding: 24px; }
-h1 { font-size: 1.3em; margin: 0 0 16px; }
+    min-width: 74px;
+    height: 46px;
+    padding: 0 12px;
 
-/* ===== Übersicht ===== */
-.uebersicht {
-  border: 1px solid #000;
-  padding: 12px;
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 16px;
+    border-radius: 10px;
+
+    background: var(--farbe-primaer);
+    color: var(--farbe-text);
+
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    white-space: nowrap;
 }
 
-/* ===== Tabelle ===== */
-table { width: 100%; border-collapse: collapse; }
-th, td { border: 1px solid #000; padding: 8px; text-align: left; }
-td input { width: 80px; }
+/* LEHRER- UND FRISTINFORMATION */
 
-/* ===== Formulare ===== */
-label { display: block; margin: 10px 0 4px; }
-select, input[type="number"], input[type="text"], input[type="date"], textarea {
-  width: 100%;
-  padding: 4px;
-  font: inherit;
+.info {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--farbe-text-sekundaer);
 }
 
-/* Felder nebeneinander (Klasse | Fach | Std., Karenz von | bis, ...) */
-.zeile { display: flex; gap: 16px; align-items: flex-end; margin-bottom: 12px; }
-.zeile > div { flex: 1; }
-.zeile > div.schmal { flex: 0 0 100px; }
+/* NAVIGATION */
 
-.hinweis { font-size: 0.8em; margin: 4px 0 0; }
+nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 
-/* Tags / Checkboxen nebeneinander */
-.tags { display: flex; gap: 12px; flex-wrap: wrap; }
-.tags label { display: inline-block; border: 1px solid #000; padding: 6px 10px; margin: 0; }
+nav a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 
-/* ===== Buttons (sind <a>-Links bzw. <button>) ===== */
+    min-height: 40px;
+    padding: 10px 15px;
+
+    font-size: 13px;
+    font-weight: 650;
+    white-space: nowrap;
+
+    border: 1px solid transparent;
+    border-radius: 8px;
+}
+
+nav a:hover {
+    background: var(--farbe-primaer-hell);
+    color: var(--farbe-primaer-dunkel);
+}
+
+/* AKTIVE NAVIGATION JE NACH SEITE */
+
+body:has(.uebersicht) nav a[href="Lehrer_ansicht.html"],
+body:has(#klasse) nav a[href="Lehrer_ansicht.html"],
+body:has(#ausmass) nav a[href="profil_kompetenzen.html"] {
+    background: var(--farbe-primaer-hell);
+    color: var(--farbe-primaer-dunkel);
+}
+
+/* LOGOUT */
+
+nav a:last-child {
+    margin-left: 8px;
+
+    border: 1px solid var(--farbe-rahmen);
+    background: var(--farbe-oberflaeche);
+    color: var(--farbe-text);
+}
+
+nav a:last-child:hover {
+    background: var(--farbe-oberflaeche-sanft);
+    border-color: var(--farbe-primaer);
+}
+
+
+/* ==========================================
+   3. HAUPTBEREICH
+   ========================================== */
+
+main {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 55px 28px 90px;
+}
+
+h1 {
+    margin: 0 0 28px;
+
+    font-size: 25px;
+    font-weight: 750;
+    letter-spacing: -0.6px;
+    line-height: 1.3;
+}
+
+h2 {
+    color: var(--farbe-text);
+    font-weight: 750;
+    letter-spacing: -0.3px;
+}
+
+
+/* ==========================================
+   4. BUTTONS – ALLE SEITEN
+   ========================================== */
+
 .btn {
-  display: inline-block;
-  border: 1px solid #000;
-  background: #fff;
-  color: #000;
-  padding: 6px 14px;
-  font: inherit;
-  text-decoration: none;
-  cursor: pointer;
-}
-.btn:hover { background: #eee; }
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 
-.leiste { display: flex; justify-content: space-between; margin-top: 24px; }
-.leiste.rechts { justify-content: flex-end; }
+    min-height: 44px;
+    padding: 12px 22px;
+
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.25;
+    text-align: center;
+
+    border: 1px solid var(--farbe-rahmen);
+    border-radius: 9px;
+
+    background: var(--farbe-oberflaeche);
+    color: var(--farbe-text);
+
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: var(--farbe-oberflaeche-sanft);
+    border-color: var(--farbe-primaer);
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+/* BUTTON-LEISTE */
+
+.leiste {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    margin-top: 24px;
+}
+
+.leiste.rechts {
+    justify-content: flex-end;
+}
+
+/* LETZTER BUTTON = PRIMÄRAKTION */
+
+.leiste > .btn:last-child {
+    background: var(--farbe-primaer);
+    border-color: var(--farbe-primaer);
+    color: var(--farbe-text);
+}
+
+.leiste > .btn:last-child:hover {
+    background: var(--farbe-primaer-hover);
+    border-color: var(--farbe-primaer-hover);
+}
+
+
+/* ==========================================
+   5. TABELLEN – ALLE SEITEN
+   ========================================== */
+
+table {
+    width: 100%;
+
+    border-collapse: separate;
+    border-spacing: 0;
+
+    background: var(--farbe-oberflaeche);
+
+    border: 1px solid var(--farbe-rahmen);
+    border-radius: 14px;
+
+    box-shadow:
+        0 7px 24px var(--farbe-schatten);
+
+    overflow: hidden;
+}
+
+thead {
+    background: var(--farbe-tabellenkopf);
+}
+
+th,
+td {
+    padding: 18px 24px;
+
+    text-align: left;
+    vertical-align: middle;
+
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+th {
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.025em;
+
+    color: var(--farbe-primaer-dunkel);
+}
+
+td {
+    color: var(--farbe-text);
+}
+
+td:first-child {
+    font-weight: 700;
+}
+
+tbody tr:not(:last-child) td {
+    border-bottom: 1px solid var(--farbe-rahmen);
+}
+
+tbody tr:hover {
+    background: var(--farbe-tabellenzeile-hover);
+}
+
+
+/* ==========================================
+   6. LEHRER-ÜBERSICHT
+   Lehrer_ansicht.html
+   ========================================== */
+
+/* STUNDENÜBERSICHT */
+
+.uebersicht {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+
+    width: 100%;
+    margin-bottom: 26px;
+}
+
+.uebersicht span {
+    display: flex;
+    align-items: center;
+
+    min-height: 83px;
+    padding: 22px 24px;
+
+    background: var(--farbe-oberflaeche);
+
+    border: 1px solid var(--farbe-rahmen);
+    border-left: 4px solid var(--farbe-primaer);
+    border-radius: 13px;
+
+    box-shadow:
+        0 5px 20px var(--farbe-schatten);
+
+    font-size: 15px;
+    font-weight: 700;
+}
+
+/* STUNDENSPALTE */
+
+main:has(.uebersicht) th:last-child,
+main:has(.uebersicht) td:last-child {
+    width: 110px;
+    text-align: center;
+}
+
+
+/* ==========================================
+   7. FORMULARFELDER – GEMEINSAM
+   ========================================== */
+
+main label {
+    display: block;
+
+    margin-bottom: 9px;
+
+    font-size: 13px;
+    font-weight: 650;
+    color: var(--farbe-text);
+}
+
+/* TEXTEINGABEN UND AUSWAHLFELDER */
+
+main input[type="number"],
+main input[type="date"],
+main select,
+main textarea {
+    width: 100%;
+    min-height: 44px;
+
+    padding: 11px 14px;
+
+    background: var(--farbe-oberflaeche);
+    color: var(--farbe-text);
+
+    border: 1px solid var(--farbe-rahmen);
+    border-radius: 9px;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    outline: none;
+}
+
+main input[type="number"]:hover,
+main input[type="date"]:hover,
+main select:hover,
+main textarea:hover {
+    border-color: var(--farbe-primaer);
+}
+
+main input[type="number"]:focus,
+main input[type="date"]:focus,
+main select:focus,
+main textarea:focus {
+    border-color: var(--farbe-primaer);
+
+    box-shadow:
+        0 0 0 3px var(--farbe-primaer-hell);
+}
+
+/* SELECT */
+
+main select {
+    cursor: pointer;
+}
+
+/* TEXTAREA */
+
+main textarea {
+    display: block;
+
+    min-height: 105px;
+    padding: 14px 16px;
+
+    resize: vertical;
+
+    line-height: 1.5;
+}
+
+/* FORMULARZEILEN */
+
+.zeile {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+
+    width: 100%;
+    margin-bottom: 24px;
+}
+
+.zeile > div {
+    min-width: 0;
+}
+
+
+/* ==========================================
+   8. PROFIL / KOMPETENZEN
+   profil_kompetenzen.html
+   ========================================== */
+
+/* FORMULAR ALS KARTE */
+
+main:has(#ausmass) form {
+    width: 100%;
+
+    padding: 32px;
+
+    background: var(--farbe-oberflaeche);
+
+    border: 1px solid var(--farbe-rahmen);
+    border-radius: 15px;
+
+    box-shadow:
+        0 7px 24px var(--farbe-schatten);
+}
+
+/* FORMULARZEILEN */
+
+main:has(#ausmass) .zeile {
+    margin-bottom: 28px;
+}
+
+/* STUNDENAUSMASS */
+
+#ausmass {
+    max-width: 180px;
+}
+
+/* KARENZ / TEILZEIT */
+
+main:has(#ausmass) .zeile:first-child > div:last-child {
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 9px;
+}
+
+/* CHECKBOX-BESCHRIFTUNG */
+
+main label:has(input[type="checkbox"]) {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+
+    margin: 0;
+
+    font-size: 14px;
+    font-weight: 550;
+
+    cursor: pointer;
+}
+
+/* CHECKBOXEN */
+
+main input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+
+    margin: 0;
+    flex-shrink: 0;
+
+    accent-color: var(--farbe-primaer-dunkel);
+    cursor: pointer;
+}
+
+/* DATUMSFELDER */
+
+#karenz-von,
+#karenz-bis {
+    max-width: 100%;
+}
+
+/* KOMPETENZEN ALS TAGS */
+
+.tags {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    margin-top: 12px;
+    margin-bottom: 32px;
+}
+
+/* EINZELNER KOMPETENZ-TAG */
+
+.tags label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+
+    min-height: 44px;
+    padding: 11px 16px;
+
+    background: var(--farbe-oberflaeche-sanft);
+
+    border: 1px solid var(--farbe-rahmen);
+    border-radius: 9px;
+
+    font-size: 13px;
+    font-weight: 650;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+/* HOVER */
+
+.tags label:hover {
+    background: var(--farbe-primaer-hell);
+    border-color: var(--farbe-primaer);
+}
+
+/* AUSGEWÄHLTE KOMPETENZ */
+
+.tags label:has(input:checked) {
+    background: var(--farbe-primaer-hell);
+    border-color: var(--farbe-primaer);
+    color: var(--farbe-primaer-dunkel);
+}
+
+/* SAVE BUTTON */
+
+main:has(#ausmass) .leiste {
+    margin-top: 20px;
+}
+
+
+/* ==========================================
+   9. WÜNSCHE BEARBEITEN
+   wuensche_bearbeiten.html
+   ========================================== */
+
+/* OBERER EINGABEBEREICH */
+
+main:has(#klasse) > .zeile {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        120px;
+
+    gap: 20px;
+    align-items: end;
+
+    padding: 28px;
+    margin-bottom: 16px;
+
+    background: var(--farbe-oberflaeche);
+
+    border: 1px solid var(--farbe-rahmen);
+    border-radius: 14px;
+
+    box-shadow:
+        0 5px 20px var(--farbe-schatten);
+}
+
+/* STUNDENFELD */
+
+main:has(#klasse) .schmal {
+    width: 100%;
+}
+
+/* HINWEISTEXT */
+
+.hinweis {
+    margin: 0 0 22px;
+
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--farbe-text-sekundaer);
+}
+
+/* WUNSCH HINZUFÜGEN */
+
+main:has(#klasse) > button.btn {
+    min-height: 44px;
+    padding: 12px 20px;
+
+    background: var(--farbe-primaer);
+    border-color: var(--farbe-primaer);
+
+    font-weight: 700;
+    color: var(--farbe-text);
+}
+
+main:has(#klasse) > button.btn:hover {
+    background: var(--farbe-primaer-hover);
+    border-color: var(--farbe-primaer-hover);
+}
+
+/* ÜBERSCHRIFT MEINE WÜNSCHE */
+
+main:has(#klasse) h2 {
+    margin-bottom: 18px;
+
+    font-weight: 750;
+    color: var(--farbe-text);
+}
+
+/* TABELLE IM BEARBEITUNGSMODUS */
+
+main:has(#klasse) table {
+    margin-top: 0;
+}
+
+main:has(#klasse) table th {
+    padding: 17px 24px;
+}
+
+main:has(#klasse) table td {
+    padding: 17px 24px;
+    height: 76px;
+}
+
+/* STUNDENEINGABE IN DER TABELLE */
+
+main:has(#klasse) table input[type="number"] {
+    width: 90px;
+    min-height: 42px;
+
+    padding: 9px 12px;
+
+    font-size: 14px;
+    font-weight: 650;
+
+    border-radius: 8px;
+}
+
+/* STUNDENSPALTE */
+
+main:has(#klasse) table th:nth-child(3),
+main:has(#klasse) table td:nth-child(3) {
+    width: 125px;
+}
+
+/* LÖSCHSPALTE */
+
+main:has(#klasse) table th:last-child,
+main:has(#klasse) table td:last-child {
+    width: 90px;
+    text-align: center;
+}
+
+/* LÖSCHBUTTON */
+
+main:has(#klasse) table .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 42px;
+    min-height: 42px;
+
+    padding: 8px 12px;
+
+    background: var(--farbe-oberflaeche);
+
+    border: 1px solid var(--farbe-rahmen);
+    border-radius: 9px;
+
+    color: var(--farbe-text);
+
+    font-size: 18px;
+    font-weight: 500;
+}
+
+main:has(#klasse) table .btn:hover {
+    background: var(--farbe-primaer-hell);
+    border-color: var(--farbe-primaer);
+}
+
+/* NACHRICHTENFELD */
+
+main:has(#klasse) label[for="nachricht"] {
+    display: block;
+
+    margin-top: 30px;
+    margin-bottom: 12px;
+
+    font-size: 14px;
+    font-weight: 650;
+
+    color: var(--farbe-text);
+}
+
+#nachricht {
+    width: 100%;
+    max-width: 700px;
+    min-height: 110px;
+
+    margin-bottom: 22px;
+
+    background: var(--farbe-oberflaeche);
+}
+
+/* STUNDENZUSAMMENFASSUNG */
+
+main:has(#klasse) > p:last-of-type {
+    display: block;
+
+    width: fit-content;
+    max-width: 100%;
+
+    margin: 8px 0 25px;
+    padding: 14px 20px;
+
+    background: var(--farbe-primaer-hell);
+    border: 1px solid var(--farbe-rahmen);
+    border-radius: 9px;
+
+    color: var(--farbe-primaer-dunkel);
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* ABBRECHEN / SAVE */
+
+main:has(#klasse) .leiste {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+
+    margin-top: 25px;
+}
+
+/* SAVE */
+
+main:has(#klasse) .leiste > .btn:last-child {
+    min-width: 105px;
+}
+
+/* ABBRECHEN */
+
+main:has(#klasse) .leiste > .btn:first-child {
+    min-width: 125px;
+}
+
+
+/* ==========================================
+   10. TABLET
+   ========================================== */
+
+@media (max-width: 950px) {
+
+    header {
+        flex-wrap: wrap;
+
+        padding: 18px 24px;
+        gap: 15px;
+    }
+
+    nav {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    main {
+        padding: 40px 24px 70px;
+    }
+
+    .uebersicht {
+        gap: 12px;
+    }
+
+    .uebersicht span {
+        padding: 18px;
+        font-size: 13px;
+    }
+
+    main:has(#klasse) > .zeile {
+        grid-template-columns:
+            minmax(0, 1fr)
+            minmax(0, 1fr)
+            100px;
+
+        gap: 14px;
+        padding: 22px;
+    }
+}
+
+
+/* ==========================================
+   11. SMARTPHONE
+   ========================================== */
+
+@media (max-width: 600px) {
+
+    /* TOPBAR */
+
+    header {
+        padding: 16px 18px;
+        gap: 12px;
+        min-height: 74px;
+    }
+
+    .logo {
+        min-width: 60px;
+        height: 42px;
+        font-size: 12px;
+    }
+
+    .info {
+        flex: 1;
+        font-size: 12px;
+    }
+
+    nav {
+        gap: 6px;
+    }
+
+    nav a {
+        padding: 10px 11px;
+        font-size: 12px;
+    }
+
+    nav a:last-child {
+        margin-left: 0;
+    }
+
+    /* HAUPTBEREICH */
+
+    main {
+        padding: 32px 18px 60px;
+    }
+
+    h1 {
+        font-size: 22px;
+        margin-bottom: 24px;
+    }
+
+    /* LEHRER-ÜBERSICHT */
+
+    .uebersicht {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-bottom: 22px;
+    }
+
+    .uebersicht span {
+        min-height: 65px;
+        padding: 17px 20px;
+
+        font-size: 14px;
+        border-radius: 10px;
+    }
+
+    /* TABELLEN */
+
+    table {
+        border-radius: 11px;
+    }
+
+    th,
+    td {
+        padding: 15px 12px;
+        font-size: 13px;
+    }
+
+    th {
+        font-size: 11px;
+    }
+
+    main:has(.uebersicht) th:last-child,
+    main:has(.uebersicht) td:last-child {
+        width: 65px;
+    }
+
+    /* BUTTONS */
+
+    .leiste {
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .leiste > .btn {
+        flex: 1;
+        padding: 12px 10px;
+        font-size: 12px;
+    }
+
+    /* FORMULARE */
+
+    .zeile {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    /* PROFIL */
+
+    main:has(#ausmass) form {
+        padding: 22px 18px;
+        border-radius: 12px;
+    }
+
+    main:has(#ausmass) .zeile:first-child > div:last-child {
+        padding-bottom: 0;
+    }
+
+    #ausmass {
+        max-width: 100%;
+    }
+
+    .tags {
+        gap: 9px;
+    }
+
+    .tags label {
+        padding: 10px 13px;
+        font-size: 12px;
+    }
+
+    /* WÜNSCHE BEARBEITEN */
+
+    main:has(#klasse) > .zeile {
+        grid-template-columns: 1fr;
+        gap: 17px;
+        padding: 20px;
+    }
+
+    main:has(#klasse) table {
+        table-layout: fixed;
+    }
+
+    main:has(#klasse) table th,
+    main:has(#klasse) table td {
+        padding: 13px 8px;
+        font-size: 12px;
+        overflow-wrap: anywhere;
+    }
+
+    main:has(#klasse) table td {
+        height: 64px;
+    }
+
+    main:has(#klasse) table th:first-child,
+    main:has(#klasse) table td:first-child {
+        width: 17%;
+    }
+
+    main:has(#klasse) table th:nth-child(3),
+    main:has(#klasse) table td:nth-child(3) {
+        width: 67px;
+    }
+
+    main:has(#klasse) table th:last-child,
+    main:has(#klasse) table td:last-child {
+        width: 53px;
+        padding-left: 4px;
+        padding-right: 4px;
+    }
+
+    main:has(#klasse) table input[type="number"] {
+        width: 100%;
+        min-height: 38px;
+        padding: 7px 5px;
+        font-size: 12px;
+    }
+
+    main:has(#klasse) table .btn {
+        min-width: 36px;
+        min-height: 36px;
+        padding: 6px;
+    }
+
+    #nachricht {
+        max-width: 100%;
+    }
+
+    main:has(#klasse) > p:last-of-type {
+        width: 100%;
+        font-size: 12px;
+    }
+}
+
+
+/* ==========================================
+   12. REDUZIERTE ANIMATIONEN
+   ========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+}
