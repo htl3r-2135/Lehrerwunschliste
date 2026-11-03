@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Profil / Kompetenzen</title>
+  <link rel="stylesheet" href="lehrer.css">
+</head>
+<body>
+
+  <header>
+    <div class="logo">LOGO</div>
+    <div class="info">Lehrer: BAY | Frist: 15.04. (noch 12 Tage)</div>
+    <nav>
+      <a href="Lehrer_Ansicht.html">Wünsche</a>
+      <a href="Profil_Kompetenzen.html">Profil / Kompetenzen</a>
+      <a href="#">Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Mein Profil</h1>
+
+    <form action="Lehrer_Ansicht.html">
+
+      <div class="zeile">
+        <div>
+          <label for="ausmass">Stundenausmaß (Wochenstd.)</label>
+          <input id="ausmass" type="number" min="1" max="25" value="20">
+        </div>
+        <div>
+          <label><input type="checkbox"> Karenz / Teilzeit-Hinweis</label>
+        </div>
+      </div>
+
+      <div class="zeile">
+        <div>
+          <label for="karenz-von">Karenz von</label>
+          <input id="karenz-von" type="date">
+        </div>
+        <div>
+          <label for="karenz-bis">Karenz bis</label>
+          <input id="karenz-bis" type="date">
+        </div>
+      </div>
+
+      <label>Kompetenzen (Tags)</label>
+      <div class="tags">
+        <label><input type="checkbox"> 3D</label>
+        <label><input type="checkbox" checked> Labor</label>
+        <label><input type="checkbox"> Multimedia</label>
+        <label><input type="checkbox"> Netzwerke</label>
+      </div>
+
+      <div class="leiste rechts">
+        <button type="submit" class="btn">Save</button>
+      </div>
+    </form>
+  </main>
+
+</body>
+</html>
