@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <title>AV Ansicht</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        function logout() {
+            window.location.href = "Anmeldung.html";
+        }
+    </script>
+    <style>
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 5vh;
+        }
+
+        button {
+            padding: 0 32px;
+        }
+
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        table {
+            min-width: 80vw;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background-color: #d2d2d2;
+        }
+
+        tr {
+            border-bottom: 1px solid #d2d2d2;
+            height: 4vh;
+        }
+
+        th, td {
+            text-align: left;
+        }
+
+        #button_div {
+            display: flex;
+            flex-direction: column;
+            justify-content: right;
+            align-items: end;
+            margin: 5vh 5vw;
+        }
+
+        button {
+            padding: 1vh 32px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h2>AV</h2>
+    <button onclick="logout()">Logout</button>
+</header>
+<main>
+    <div>
+        <h3>Übersicht</h3>
+        <table id="uebersicht_table">
+            <thead>
+            <tr>
+                <th>Klasse</th>
+                <th>Fach</th>
+                <th>Zugeteilt</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>1AI</td>
+                <td>RK</td>
+                <td>KIS</td>
+            </tr>
+            <tr>
+                <td>4AX</td>
+                <td>Mathematik</td>
+                <td>SWR</td>
+            </tr>
+            <tr>
+                <td>5BI</td>
+                <td>Deutsch</td>
+                <td>HUB</td>
+            </tr>
+            <tr>
+                <td>2CI</td>
+                <td>Englisch</td>
+                <td>WAG</td>
+            </tr>
+            <tr>
+                <td>2BM</td>
+                <td>SEW</td>
+                <td>BAU</td>
+            </tr>
+            <tr>
+                <td>3AM</td>
+                <td>NWT</td>
+                <td>SCH</td>
+            </tr>
+            <tr>
+                <td>3BI</td>
+                <td>Mathematik</td>
+                <td>SWR</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div id="button_div">
+            <button>export</button>
+            <p>-> Excel Export</p>
+        </div>
+    </div>
+
+    <div>
+        <h3>Lehrer Auslastung</h3>
+        <table id="lehrer_table">
+            <thead>
+            <tr>
+                <th>Lehrer</th>
+                <th>Auslastung</th>
+                <th>Fach</th>
+                <th>Std.</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>KIS</td>
+                <td>90%</td>
+                <td>RK</td>
+                <td>36</td>
+            </tr>
+            <tr>
+                <td>SWR</td>
+                <td>100%</td>
+                <td>Mathematik</td>
+                <td>40</td>
+            </tr>
+            <tr>
+                <td>HUB</td>
+                <td>75%</td>
+                <td>Deutsch</td>
+                <td>30</td>
+            </tr>
+            <tr>
+                <td>WAG</td>
+                <td>50%</td>
+                <td>Englisch</td>
+                <td>20</td>
+            </tr>
+            <tr>
+                <td>BAU</td>
+                <td>95%</td>
+                <td>SEW</td>
+                <td>38</td>
+            </tr>
+            <tr>
+                <td>SCH</td>
+                <td>60%</td>
+                <td>NWT</td>
+                <td>24</td>
+            </tr>
+            </tbody>
+        </table>
+        <p>
+            Auslastung = Wochenstd. laut Wunsch / Soll-Stunden
+        </p>
+    </div>
+</main>
+</body>
+</html>
