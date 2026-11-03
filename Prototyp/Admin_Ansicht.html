@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <title>AV Ansicht</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        function logout() {
+            window.location.href = "Anmeldung.html";
+        }
+
+        function redirect(file) {
+            window.location.href = file;
+        }
+    </script>
+    <style>
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 5vh;
+        }
+
+        button {
+            padding: 1vh 32px;
+        }
+
+        main {
+            align-items: center;
+            width: 100%;
+        }
+
+        .stammdaten {
+            display: flex;
+            gap: 1vw;
+            align-items: center;
+            justify-content: center;
+            margin: 1vh 0;
+            background-color: #d2d2d2;
+            padding: 1vh 20vw;
+            border-radius: 10px;
+            width: 20vw;
+        }
+
+        .stammdaten:hover {
+            background-color: #b2b2b2;
+            cursor: pointer;
+        }
+
+        .stammdaten_container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h2>Admin | Schuljahr 2026/27</h2>
+    <button onclick="logout()">Logout</button>
+</header>
+<main>
+    <h3>Stammdaten für das kommende Schuljahr</h3>
+    <div class="stammdaten_container">
+        <div class="stammdaten" onclick="redirect('Admin_Klassen_Ansicht.html')">
+            <h4>Klassen</h4>
+            <p>(0)</p>
+        </div>
+
+        <div class="stammdaten" onclick="redirect('Admin_Lehrer_Ansicht.html')">
+            <h4>Lehrer</h4>
+            <p>(0)</p>
+        </div>
+
+        <div class="stammdaten" onclick="redirect('Admin_Fächer_Ansicht.html')">
+            <h4>Fächer</h4>
+            <p>(0)</p>
+        </div>
+
+        <div class="stammdaten" onclick="redirect('Admin_Abteilungen_Ansicht.html')">
+            <h4>Abteilungen</h4>
+            <p>(0)</p>
+        </div>
+
+        <div class="stammdaten" onclick="redirect('Admin_Fristen_Ansicht.html')">
+            <h4>Fristen</h4>
+        </div>
+    </div>
+</main>
+</body>
+</html>
