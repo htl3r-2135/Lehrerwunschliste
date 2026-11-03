@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wünsche bearbeiten</title>
+  <link rel="stylesheet" href="lehrer.css">
+</head>
+<body>
+
+  <header>
+    <div class="logo">LOGO</div>
+    <div class="info">Lehrer: BAY | Frist: 15.04. (noch 12 Tage)</div>
+    <nav>
+      <a href="Lehrer_ansicht.html">Wünsche</a>
+      <a href="profil_kompetenzen.html">Profil / Kompetenzen</a>
+      <a href="#">Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Wünsche bearbeiten</h1>
+
+    <!-- Neuen Wunsch hinzufügen -->
+    <div class="zeile">
+      <div>
+        <label for="klasse">Klasse</label>
+        <select id="klasse">
+          <option value="">– Klasse wählen –</option>
+          <option value="BI-5">5BI</option>
+          <option value="AX-5">5AX</option>
+          <option value="CN-4">4CN</option>
+        </select>
+      </div>
+
+      <!-- data-gruppe = Abteilung-Schulstufe, passend zur Klasse links -->
+      <div>
+        <label for="fach">Fach</label>
+        <select id="fach">
+          <option value="">– zuerst Klasse wählen –</option>
+          <option data-gruppe="BI-5">MEDT</option>
+          <option data-gruppe="BI-5">SYT</option>
+          <option data-gruppe="AX-5">WebTech Übung</option>
+          <option data-gruppe="CN-4">AM</option>
+          <option data-gruppe="CN-4">NWT</option>
+        </select>
+      </div>
+
+      <div class="schmal">
+        <label for="std">Std.</label>
+        <input id="std" type="number" min="1" max="20" value="2">
+      </div>
+    </div>
+    <p class="hinweis">Es werden nur Fächer angezeigt, die zu Abteilung und Schulstufe der Klasse passen.</p>
+
+    <button type="button" class="btn">+ Wunsch hinzufügen</button>
+
+    <!-- Bestehende Wünsche: Stunden direkt in der Tabelle änderbar, ✕ entfernt den Wunsch -->
+    <h2 style="font-size:1.1em; margin-top:24px;">Meine Wünsche</h2>
+    <table>
+      <thead>
+        <tr><th>Klasse</th><th>Fach</th><th>Std.</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr><td>5BI</td><td>MEDT</td><td><input type="number" min="1" max="20" value="3"></td><td><button type="button" class="btn">✕</button></td></tr>
+        <tr><td>5AX</td><td>WebTech Übung</td><td><input type="number" min="1" max="20" value="2"></td><td><button type="button" class="btn">✕</button></td></tr>
+        <tr><td>4CN</td><td>AM</td><td><input type="number" min="1" max="20" value="3"></td><td><button type="button" class="btn">✕</button></td></tr>
+      </tbody>
+    </table>
+
+    <label for="nachricht">Nachricht an Fachverantwortliche(n) (optional)</label>
+    <textarea id="nachricht" rows="3"></textarea>
+
+    <p>Stundenausmaß 20 | Eingetragen 8 | Rest 12</p>
+
+    <div class="leiste">
+      <a class="btn" href="Lehrer_ansicht.html">Abbrechen</a>
+      <a class="btn" href="Lehrer_ansicht.html">Save</a>
+    </div>
+  </main>
+
+  <script>
+    // Einziges JavaScript: Wenn eine Klasse gewählt wird, zeigen wir nur die Fächer,
+    // deren data-gruppe (Abteilung-Schulstufe) zur Klasse passt.
+    const klasse = document.getElementById("klasse");
+    const fach = document.getElementById("fach");
+
+    klasse.addEventListener("change", function () {
+      fach.value = ""; // bisherige Auswahl zurücksetzen
+
+      for (const option of fach.options) {
+        if (!option.dataset.gruppe) {
+          // Platzhalter-Option: Text je nach Zustand anpassen
+          option.textContent = klasse.value ? "– Fach wählen –" : "– zuerst Klasse wählen –";
+          continue;
+        }
+        option.hidden = option.dataset.gruppe !== klasse.value;
+      }
+    });
+  </script>
+</body>
+</html>
