@@ -23,45 +23,330 @@
         }
     </script>
     <style>
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            min-height: 5vh;
-        }
+        
+@import url("farben.css");
 
-        button {
-            padding: 1vh 32px;
-        }
+/* GRUNDEINSTELLUNGEN */
 
-        main {
-            align-items: center;
-            width: 100%;
-        }
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
 
-        .stammdaten {
-            display: flex;
-            gap: 1vw;
-            align-items: center;
-            justify-content: center;
-            margin: 1vh 0;
-            background-color: #d2d2d2;
-            padding: 1vh 20vw;
-            border-radius: 10px;
-            width: 20vw;
-        }
+html {
+    font-family: -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Inter, Arial, sans-serif;
+}
 
-        .stammdaten:hover {
-            background-color: #b2b2b2;
-            cursor: pointer;
-        }
+body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--farbe-text);
+    background: var(--farbe-hintergrund);
+}
 
-        .stammdaten_container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-        }
+/* TOPBAR */
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+
+    width: 100%;
+    min-height: 88px;
+    padding: 20px max(28px, calc((100vw - 1100px) / 2));
+
+    background: var(--farbe-oberflaeche);
+    border-bottom: 1px solid var(--farbe-rahmen);
+}
+
+header h2 {
+    margin: 0;
+    font-size: 21px;
+    font-weight: 750;
+    letter-spacing: -0.5px;
+    line-height: 1.3;
+}
+
+/* LOGOUT BUTTON */
+
+button {
+    padding: 12px 22px;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 650;
+
+    color: var(--farbe-text);
+    background: var(--farbe-oberflaeche);
+
+    border: 1px solid var(--farbe-rahmen);
+    border-radius: 9px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+button:hover {
+    background: var(--farbe-oberflaeche-sanft);
+    border-color: var(--farbe-primaer);
+}
+
+button:active {
+    transform: translateY(1px);
+}
+
+button:focus-visible {
+    outline: 3px solid var(--farbe-fokus);
+    outline-offset: 3px;
+}
+
+/* HAUPTBEREICH */
+
+main {
+    width: 100%;
+    max-width: 1100px;
+
+    margin: 0 auto;
+    padding: 55px 28px 90px;
+}
+
+main h3 {
+    margin: 0 0 30px;
+
+    font-size: 23px;
+    font-weight: 750;
+    letter-spacing: -0.6px;
+    line-height: 1.35;
+}
+
+/* STAMMDATEN CONTAINER */
+
+.stammdaten_container {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+
+    width: 100%;
+}
+
+/* STAMMDATEN KACHELN */
+
+.stammdaten {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+
+    min-height: 110px;
+    width: 100%;
+
+    margin: 0;
+    padding: 26px 32px;
+
+    background: var(--farbe-oberflaeche);
+
+    border: 1px solid var(--farbe-rahmen);
+    border-radius: 14px;
+
+    box-shadow:
+        0 5px 20px var(--farbe-schatten);
+
+    cursor: pointer;
+
+    overflow: hidden;
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+/* GELBER AKZENT LINKS */
+
+.stammdaten::before {
+    content: "";
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+
+    width: 5px;
+
+    background: var(--farbe-primaer);
+}
+
+/* PFEIL RECHTS */
+
+.stammdaten::after {
+    content: "";
+
+    position: absolute;
+    right: 29px;
+    top: 50%;
+
+    width: 9px;
+    height: 9px;
+
+    border-right: 2px solid var(--farbe-primaer-dunkel);
+    border-top: 2px solid var(--farbe-primaer-dunkel);
+
+    transform: translateY(-50%) rotate(45deg);
+
+    transition: right 0.2s ease;
+}
+
+/* HOVER EFFEKT */
+
+.stammdaten:hover {
+    background: var(--farbe-oberflaeche-sanft);
+    border-color: var(--farbe-primaer);
+
+    box-shadow:
+        0 8px 26px var(--farbe-schatten);
+
+    transform: translateY(-2px);
+}
+
+.stammdaten:hover::after {
+    right: 25px;
+}
+
+/* TITEL DER KACHELN */
+
+.stammdaten h4 {
+    margin: 0;
+
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+
+    color: var(--farbe-text);
+}
+
+/* ANZAHL-BADGE (0) */
+
+.stammdaten p {
+    margin: 0 30px 0 auto;
+
+    padding: 7px 13px;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    color: var(--farbe-primaer-dunkel);
+    background: var(--farbe-primaer-hell);
+
+    border-radius: 8px;
+}
+
+/* LETZTE KACHEL: FRISTEN */
+
+.stammdaten:last-child {
+    grid-column: 1 / -1;
+}
+
+/* TABLET */
+
+@media (max-width: 800px) {
+
+    header {
+        padding: 20px 24px;
+    }
+
+    main {
+        padding: 40px 24px 70px;
+    }
+
+    .stammdaten_container {
+        gap: 14px;
+    }
+
+    .stammdaten {
+        padding: 23px 22px;
+    }
+
+    .stammdaten h4 {
+        font-size: 16px;
+    }
+}
+
+/* SMARTPHONE */
+
+@media (max-width: 600px) {
+
+    header {
+        min-height: 74px;
+        padding: 16px 18px;
+    }
+
+    header h2 {
+        font-size: 16px;
+    }
+
+    button {
+        padding: 10px 15px;
+        font-size: 12px;
+    }
+
+    main {
+        padding: 32px 18px 60px;
+    }
+
+    main h3 {
+        font-size: 20px;
+        margin-bottom: 24px;
+    }
+
+    .stammdaten_container {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .stammdaten {
+        min-height: 84px;
+        padding: 20px 24px;
+        border-radius: 11px;
+    }
+
+    .stammdaten:last-child {
+        grid-column: auto;
+    }
+
+    .stammdaten h4 {
+        font-size: 16px;
+    }
+
+    .stammdaten::after {
+        right: 24px;
+    }
+
+    .stammdaten p {
+        margin-right: 25px;
+    }
+}
+
+/* REDUZIERTE ANIMATIONEN */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        transition: none !important;
+    }
+}
+
     </style>
 </head>
 <body>

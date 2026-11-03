@@ -1,174 +1,522 @@
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <title>AV Ansicht</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>
-        function logout() {
-            window.location.href = "Anmeldung.html";
-        }
-    </script>
+    <title>LWL – Lehrerwunschliste</title>
+
+    <!-- Externe globale Farben -->
+    <link rel="stylesheet" href="farben.css">
+
     <style>
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            min-height: 5vh;
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        html {
+            font-family: -apple-system, BlinkMacSystemFont,
+                "Segoe UI", Inter, Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            color: var(--farbe-text);
+            background: var(--farbe-hintergrund);
+            min-height: 100vh;
         }
 
         button {
-            padding: 1vh 32px;
+            font: inherit;
+            cursor: pointer;
         }
 
-        main {
+        /* TOPBAR */
+
+        .topbar {
+            background: var(--farbe-oberflaeche);
+            border-bottom: 1px solid var(--farbe-rahmen);
+        }
+
+        .topbar-inner {
+            max-width: 1160px;
+            margin: 0 auto;
+            padding: 19px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-width: 0;
+        }
+
+        .brand-mark {
+            width: 49px;
+            height: 49px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: var(--farbe-primaer);
+            color: var(--farbe-text);
+            font-size: 16px;
+            font-weight: 850;
+            letter-spacing: -0.7px;
+        }
+
+        .brand-text {
             display: flex;
             flex-direction: column;
+            gap: 3px;
+        }
+
+        .brand-text strong {
+            font-size: 19px;
+            letter-spacing: -0.5px;
+            line-height: 1.12;
+        }
+
+        .brand-text span {
+            font-size: 12px;
+            color: var(--farbe-text-sekundaer);
+            font-weight: 500;
+        }
+
+        .topbar-actions {
+            display: flex;
             align-items: center;
+            gap: 24px;
+        }
+
+        .role {
+            color: var(--farbe-text-sekundaer);
+            font-size: 13px;
+            font-weight: 550;
+            white-space: nowrap;
+        }
+
+        /* BUTTONS */
+
+        .button {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 9px;
+            padding: 11px 18px;
+            min-height: 42px;
+            border-radius: 9px;
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1;
+            white-space: nowrap;
+            transition:
+                background-color 150ms ease,
+                border-color 150ms ease,
+                transform 150ms ease;
+        }
+
+        .button:active {
+            transform: translateY(1px);
+        }
+
+        .button:focus-visible {
+            outline: 3px solid var(--farbe-fokus);
+            outline-offset: 3px;
+        }
+
+        .button-outline {
+            background: var(--farbe-oberflaeche);
+            border: 1px solid var(--farbe-rahmen);
+            color: var(--farbe-text);
+        }
+
+        .button-outline:hover {
+            background: var(--farbe-oberflaeche-sanft);
+            border-color: var(--farbe-primaer);
+        }
+
+        .button-primary {
+            border: 1px solid var(--farbe-primaer);
+            color: var(--farbe-text);
+            background: var(--farbe-primaer);
+        }
+
+        .button-primary:hover {
+            background: var(--farbe-primaer-hover);
+            border-color: var(--farbe-primaer-hover);
+        }
+
+        .button svg {
+            display: block;
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        /* HAUPTINHALT */
+
+        main {
+            width: 100%;
+            max-width: 1160px;
+            margin: 0 auto;
+            padding: 47px 28px 80px;
+        }
+
+        section + section {
+            margin-top: 43px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0 0 17px;
+        }
+
+        .section-rule {
+            height: 26px;
+            width: 4px;
+            background: var(--farbe-primaer);
+            border-radius: 3px;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 22px;
+            line-height: 1.25;
+            font-weight: 750;
+            letter-spacing: -0.55px;
+        }
+
+        /* TABELLEN */
+
+        .panel {
+            background: var(--farbe-oberflaeche);
+            border: 1px solid var(--farbe-rahmen);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 7px 24px var(--farbe-schatten);
+        }
+
+        .table-scroll {
+            overflow-x: auto;
         }
 
         table {
-            min-width: 80vw;
+            width: 100%;
             border-collapse: collapse;
-        }
-
-        thead {
-            background-color: #d2d2d2;
-        }
-
-        tr {
-            border-bottom: 1px solid #d2d2d2;
-            height: 4vh;
+            table-layout: fixed;
         }
 
         th, td {
+            padding: 17px 25px;
             text-align: left;
+            font-size: 14px;
         }
 
-        #button_div {
+        th {
+            font-size: 12px;
+            font-weight: 750;
+            letter-spacing: 0.025em;
+            color: var(--farbe-primaer-dunkel);
+            background: var(--farbe-tabellenkopf);
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--farbe-rahmen);
+        }
+
+        tbody tr:last-child {
+            border-bottom: 0;
+        }
+
+        tbody tr:hover {
+            background: var(--farbe-tabellenzeile-hover);
+        }
+
+        td {
+            color: var(--farbe-text);
+            line-height: 1.35;
+        }
+
+        td:first-child {
+            font-weight: 700;
+        }
+
+        .table-footer {
+            border-top: 1px solid var(--farbe-rahmen);
             display: flex;
-            flex-direction: column;
-            justify-content: right;
-            align-items: end;
-            margin: 5vh 5vw;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 15px 19px;
+        }
+
+        .description {
+            margin: 15px 2px 0;
+            color: var(--farbe-text-sekundaer);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        /* RESPONSIVE DESIGN */
+
+        @media (max-width: 650px) {
+            .topbar-inner {
+                padding: 15px 18px;
+            }
+
+            .brand-mark {
+                width: 42px;
+                height: 42px;
+                font-size: 14px;
+                border-radius: 10px;
+            }
+
+            .brand-text strong {
+                font-size: 16px;
+            }
+
+            .brand-text span {
+                font-size: 11px;
+            }
+
+            .topbar-actions {
+                gap: 10px;
+            }
+
+            .role {
+                display: none;
+            }
+
+            .button {
+                padding: 10px 12px;
+            }
+
+            main {
+                padding: 32px 14px 60px;
+            }
+
+            section + section {
+                margin-top: 35px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            th, td {
+                padding: 14px 12px;
+                font-size: 13px;
+            }
+
+            th {
+                font-size: 11px;
+            }
+
+            .panel {
+                border-radius: 11px;
+            }
+
+            table {
+                min-width: 450px;
+            }
         }
     </style>
 </head>
+
 <body>
-<header>
-    <h2>AV</h2>
-    <button onclick="logout()">Logout</button>
-</header>
-<main>
-    <div>
-        <h3>Übersicht</h3>
-        <table id="uebersicht_table">
-            <thead>
-            <tr>
-                <th>Klasse</th>
-                <th>Fach</th>
-                <th>Zugeteilt</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>1AI</td>
-                <td>RK</td>
-                <td>KIS</td>
-            </tr>
-            <tr>
-                <td>4AX</td>
-                <td>Mathematik</td>
-                <td>SWR</td>
-            </tr>
-            <tr>
-                <td>5BI</td>
-                <td>Deutsch</td>
-                <td>HUB</td>
-            </tr>
-            <tr>
-                <td>2CI</td>
-                <td>Englisch</td>
-                <td>WAG</td>
-            </tr>
-            <tr>
-                <td>2BM</td>
-                <td>SEW</td>
-                <td>BAU</td>
-            </tr>
-            <tr>
-                <td>3AM</td>
-                <td>NWT</td>
-                <td>SCH</td>
-            </tr>
-            <tr>
-                <td>3BI</td>
-                <td>Mathematik</td>
-                <td>SWR</td>
-            </tr>
-            </tbody>
-        </table>
 
-        <div id="button_div">
-            <button>export</button>
-            <p>-> Excel Export</p>
+    <!-- TOPBAR -->
+
+    <header class="topbar">
+        <div class="topbar-inner">
+
+            <div class="brand">
+                <span class="brand-mark">LWL</span>
+
+                <div class="brand-text">
+                    <strong>Lehrerwunschliste</strong>
+                    <span>LWL</span>
+                </div>
+            </div>
+
+            <div class="topbar-actions">
+                <span class="role">Abteilungsvorstand</span>
+
+                <button class="button button-outline"
+                        type="button">
+                    Logout
+                </button>
+            </div>
+
         </div>
-    </div>
+    </header>
 
-    <div>
-        <h3>Lehrer Auslastung</h3>
-        <table id="lehrer_table">
-            <thead>
-            <tr>
-                <th>Lehrer</th>
-                <th>Auslastung</th>
-                <th>Fach</th>
-                <th>Std.</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>KIS</td>
-                <td>90%</td>
-                <td>RK</td>
-                <td>36</td>
-            </tr>
-            <tr>
-                <td>SWR</td>
-                <td>100%</td>
-                <td>Mathematik</td>
-                <td>40</td>
-            </tr>
-            <tr>
-                <td>HUB</td>
-                <td>75%</td>
-                <td>Deutsch</td>
-                <td>30</td>
-            </tr>
-            <tr>
-                <td>WAG</td>
-                <td>50%</td>
-                <td>Englisch</td>
-                <td>20</td>
-            </tr>
-            <tr>
-                <td>BAU</td>
-                <td>95%</td>
-                <td>SEW</td>
-                <td>38</td>
-            </tr>
-            <tr>
-                <td>SCH</td>
-                <td>60%</td>
-                <td>NWT</td>
-                <td>24</td>
-            </tr>
-            </tbody>
-        </table>
-        <p>
-            Auslastung = Wochenstd. laut Wunsch / Soll-Stunden
-        </p>
-    </div>
-</main>
+    <!-- HAUPTBEREICH -->
+
+    <main>
+
+        <!-- ÜBERSICHT -->
+
+        <section>
+            <div class="section-header">
+                <span class="section-rule"></span>
+                <h2>Übersicht</h2>
+            </div>
+
+            <div class="panel">
+                <div class="table-scroll">
+
+                    <table id="uebersicht_table">
+                        <thead>
+                            <tr>
+                                <th>Klasse</th>
+                                <th>Fach</th>
+                                <th>Zugeteilt</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>1AI</td>
+                                <td>RK</td>
+                                <td>KIS</td>
+                            </tr>
+                            <tr>
+                                <td>4AX</td>
+                                <td>Mathematik</td>
+                                <td>SWR</td>
+                            </tr>
+                            <tr>
+                                <td>5BI</td>
+                                <td>Deutsch</td>
+                                <td>HUB</td>
+                            </tr>
+                            <tr>
+                                <td>2CI</td>
+                                <td>Englisch</td>
+                                <td>WAG</td>
+                            </tr>
+                            <tr>
+                                <td>2BM</td>
+                                <td>SEW</td>
+                                <td>BAU</td>
+                            </tr>
+                            <tr>
+                                <td>3AM</td>
+                                <td>NWT</td>
+                                <td>SCH</td>
+                            </tr>
+                            <tr>
+                                <td>3BI</td>
+                                <td>Mathematik</td>
+                                <td>SWR</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+
+                <!-- EXPORT (NUR OPTISCH) -->
+
+                <div class="table-footer">
+                    <button class="button button-primary"
+                            type="button">
+
+                        <svg viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             stroke-linecap="round"
+                             stroke-linejoin="round"
+                             aria-hidden="true">
+                            <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/>
+                        </svg>
+
+                        Excel-Export
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- LEHRER AUSLASTUNG -->
+
+        <section>
+            <div class="section-header">
+                <span class="section-rule"></span>
+                <h2>Lehrer Auslastung</h2>
+            </div>
+
+            <div class="panel">
+                <div class="table-scroll">
+
+                    <table id="lehrer_table">
+                        <thead>
+                            <tr>
+                                <th>Lehrer</th>
+                                <th>Auslastung</th>
+                                <th>Fach</th>
+                                <th>Std.</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>KIS</td>
+                                <td>90%</td>
+                                <td>RK</td>
+                                <td>36</td>
+                            </tr>
+                            <tr>
+                                <td>SWR</td>
+                                <td>100%</td>
+                                <td>Mathematik</td>
+                                <td>40</td>
+                            </tr>
+                            <tr>
+                                <td>HUB</td>
+                                <td>75%</td>
+                                <td>Deutsch</td>
+                                <td>30</td>
+                            </tr>
+                            <tr>
+                                <td>WAG</td>
+                                <td>50%</td>
+                                <td>Englisch</td>
+                                <td>20</td>
+                            </tr>
+                            <tr>
+                                <td>BAU</td>
+                                <td>95%</td>
+                                <td>SEW</td>
+                                <td>38</td>
+                            </tr>
+                            <tr>
+                                <td>SCH</td>
+                                <td>60%</td>
+                                <td>NWT</td>
+                                <td>24</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+
+            <p class="description">
+                Auslastung = Wochenstd. laut Wunsch / Soll-Stunden
+            </p>
+
+        </section>
+
+    </main>
+
 </body>
 </html>

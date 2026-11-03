@@ -1,0 +1,42 @@
+/* AV Dashboard — globale Farbpalette
+   Zum Umfärben der gesamten Oberfläche ausschließlich diese Datei bearbeiten. */
+:root {
+  /* Flächen */
+  --farbe-hintergrund: #f8f7f2;
+  --farbe-seitenleiste: #f2edda;
+  --farbe-karte: #fffefa;
+  --farbe-karte-sanft: #fffbeb;
+  --farbe-tabellenkopf: #faf7ec;
+  --farbe-weiss: #ffffff;
+
+  /* Gelbe Akzentfarben */
+  --farbe-primaer: #e2b444;
+  --farbe-primaer-hover: #d3a32e;
+  --farbe-primaer-dunkel: #816013;
+  --farbe-primaer-hell: #fff2c9;
+  --farbe-primaer-sehr-hell: #fff8e4;
+
+  /* Schrift */
+  --farbe-text: #292a26;
+  --farbe-text-sekundaer: #77766d;
+  --farbe-text-dezent: #9a988e;
+
+  /* Linien, Fortschritt, Effekte */
+  --farbe-rahmen: #ede9dd;
+  --farbe-rahmen-stark: #e0d9c6;
+  --farbe-fortschritt-hintergrund: #eeeadd;
+  --farbe-fortschritt: #e2b444;
+  --farbe-schatten: rgb(63 54 27 / 5%);
+  --farbe-schatten-stark: rgb(63 54 27 / 10%);
+  --farbe-fokus: rgb(226 180 68 / 23%);
+
+  /* Statusfarben */
+  --farbe-status-voll-hintergrund: #fbe9dd;
+  --farbe-status-voll-text: #9c582f;
+  --farbe-status-hoch-hintergrund: #fff1c9;
+  --farbe-status-hoch-text: #926910;
+  --farbe-status-normal-hintergrund: #eaf1e6;
+  --farbe-status-normal-text: #55734f;
+  --farbe-status-frei-hintergrund: #f0efe9;
+  --farbe-status-frei-text: #77766d;
+}
