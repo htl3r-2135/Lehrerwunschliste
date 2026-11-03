@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fristen</title>
+    <script>
+        function logout() {
+            window.location.href = "../Anmeldung.html";
+        }
+
+        function redirect(file) {
+            window.location.href = file;
+        }
+    </script>
+    <style>
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 5vh;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h2>Fristen | Schuljahr 2026/27</h2>
+    <button onclick="logout()">Logout</button>
+</header>
+<main>
+    <button onclick="redirect('../Admin_Ansicht.html')">
+        Back
+    </button>
+
+    <div>
+        <h3>Fristen eintragen</h3>
+
+        <div>
+            <p>1. Admin-Daten eintragen bis</p>
+            <input type="text" placeholder="01.01.2026">
+        </div>
+
+        <div>
+            <p>2. Lehrer-Wünsche bis</p>
+            <input type="text" placeholder="01.01.2026">
+        </div>
+
+        <div>
+            <p>3. Fachverantwortliche bis</p>
+            <input type="text" placeholder="01.01.2026">
+        </div>
+
+        <div>
+            <p>4. AV / Direktion bis</p>
+            <input type="text" placeholder="01.01.2026">
+        </div>
+    </div>
+
+    <button id="speichern" onclick="redirect('../Admin_Ansicht.html?from=fristen')">Speichern</button>
+</main>
+</body>
+</html>

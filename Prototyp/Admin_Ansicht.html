@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <title>AV Ansicht</title>
+    <title>Admin Ansicht</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>
@@ -11,6 +11,15 @@
 
         function redirect(file) {
             window.location.href = file;
+        }
+
+        onload = () => {
+            urlParams = new URLSearchParams(window.location.search);
+
+            if (urlParams.get('from') !== null) {
+                alert(urlParams.get('from') + " erfolgreich eingetragen");
+                window.location.href = window.location.href.split('?')[0];
+            }
         }
     </script>
     <style>
@@ -83,7 +92,7 @@
             <p>(0)</p>
         </div>
 
-        <div class="stammdaten" onclick="redirect('Admin_Fristen_Ansicht.html')">
+        <div class="stammdaten" onclick="redirect('./Admin_ansichten/Fristen_ansicht.html')">
             <h4>Fristen</h4>
         </div>
     </div>
