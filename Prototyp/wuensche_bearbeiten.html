@@ -12,8 +12,8 @@
     <div class="logo">LOGO</div>
     <div class="info">Lehrer: BAY | Frist: 15.04. (noch 12 Tage)</div>
     <nav>
-      <a href="Lehrer_Ansicht.html">Wünsche</a>
-      <a href="Profil_Kompetenzen.html">Profil / Kompetenzen</a>
+      <a href="Lehrer_ansicht.html">Wünsche</a>
+      <a href="profil_kompetenzen.html">Profil / Kompetenzen</a>
       <a href="#">Logout</a>
     </nav>
   </header>
@@ -21,6 +21,7 @@
   <main>
     <h1>Wünsche bearbeiten</h1>
 
+    <!-- Neuen Wunsch hinzufügen -->
     <div class="zeile">
       <div>
         <label for="klasse">Klasse</label>
@@ -32,6 +33,7 @@
         </select>
       </div>
 
+      <!-- data-gruppe = Abteilung-Schulstufe, passend zur Klasse links -->
       <div>
         <label for="fach">Fach</label>
         <select id="fach">
@@ -53,6 +55,7 @@
 
     <button type="button" class="btn">+ Wunsch hinzufügen</button>
 
+    <!-- Bestehende Wünsche: Stunden direkt in der Tabelle änderbar, ✕ entfernt den Wunsch -->
     <h2 style="font-size:1.1em; margin-top:24px;">Meine Wünsche</h2>
     <table>
       <thead>
@@ -71,20 +74,23 @@
     <p>Stundenausmaß 20 | Eingetragen 8 | Rest 12</p>
 
     <div class="leiste">
-      <a class="btn" href="Lehrer_Ansicht.html">Abbrechen</a>
-      <a class="btn" href="Lehrer_Ansicht.html">Save</a>
+      <a class="btn" href="Lehrer_ansicht.html">Abbrechen</a>
+      <a class="btn" href="Lehrer_ansicht.html">Save</a>
     </div>
   </main>
 
   <script>
+    // Einziges JavaScript: Wenn eine Klasse gewählt wird, zeigen wir nur die Fächer,
+    // deren data-gruppe (Abteilung-Schulstufe) zur Klasse passt.
     const klasse = document.getElementById("klasse");
     const fach = document.getElementById("fach");
 
     klasse.addEventListener("change", function () {
-      fach.value = "";
+      fach.value = ""; // bisherige Auswahl zurücksetzen
 
       for (const option of fach.options) {
         if (!option.dataset.gruppe) {
+          // Platzhalter-Option: Text je nach Zustand anpassen
           option.textContent = klasse.value ? "– Fach wählen –" : "– zuerst Klasse wählen –";
           continue;
         }
