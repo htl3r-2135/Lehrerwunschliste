@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <title>Fachverantwortliche(r) Übersicht</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        function logout() {
+            window.location.href = "Anmeldung.html";
+        }
+
+        function redirect(file) {
+            window.location.href = file;
+        }
+
+        // Beispieldaten (spaeter vom Server)
+        const zeilen = [
+            { klasse: "5BI", fach: "MEDT", eingetragen: 2, konflikte: 1, benoetigt: 1, ausgewaehlt: true },
+            { klasse: "5CN", fach: "AM", eingetragen: 0, konflikte: 0, benoetigt: 1, ausgewaehlt: false },
+            { klasse: "4CN", fach: "AM", eingetragen: 0, konflikte: 0, benoetigt: 1, ausgewaehlt: false }
+        ];
+
+        let sortierung = { spalte: null, aufsteigend: true };
+
+        function sortieren(spalte) {
+            sortierung.aufsteigend = sortierung.spalte === spalte ? !sortierung.aufsteigend : true;
+            sortierung.spalte = spalte;
+            tabelleAufbauen();
+        }
+
+        function suchfeldUmschalten() {
+            const feld = document.getElementById("suchfeld");
+            feld.hidden = !feld.hidden;
+            if (!feld.hidden) feld.focus();
+            else { feld.value = ""; tabelleAufbauen(); }
+        }
+
+        function filterUmschalten() {
+            const label = document.getElementById("filter_label");
+            label.hidden = !label.hidden;
+            if (label.hidden) { document.getElementById("filter_offen").checked = false; tabelleAufbauen(); }
+        }
+
+        function tabelleAufbauen() {
+            const suche = document.getElementById("suchfeld").value.trim().toLowerCase();
+            const nurOffene = document.getElementById("filter_offen").checked;
+
+            let daten = zeilen.filter(z =>
+                (z.klasse + " " + z.fach).toLowerCase().includes(suche) &&
+                (!nurOffene || z.eingetragen < z.benoetigt || z.konflikte > 0)
+            );
+
+            if (sortierung.spalte) {
+                daten.sort((a, b) => a[sortierung.spalte].localeCompare(b[sortierung.spalte], "de"));
+                if (!sortierung.aufsteigend) daten.reverse();
+            }
+
+            const tbody = document.getElementById("tabelle_body");
+            tbody.innerHTML = "";
+
+            daten.forEach(z => {
+                const tr = document.createElement("tr");
+                if (z.ausgewaehlt) tr.className = "ausgewaehlt";
+                tr.onclick = () => redirect(
+                    "Fachverantwortlicher_Zuteilung.html?klasse=" + encodeURIComponent(z.klasse) +
+                    "&fach=" + encodeURIComponent(z.fach) +
+                    "&benoetigt=" + z.benoetigt
+                );
+
+                const eingetragen = z.konflikte > 0
+                    ? z.eingetragen + " (" + z.konflikte + " ⚠)"
+                    : z.eingetragen;
+
+                [z.klasse, z.fach, eingetragen, z.benoetigt].forEach(wert => {
+                    const td = document.createElement("td");
+                    td.textContent = wert;
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+        }
+
+        onload = () => {
+            urlParams = new URLSearchParams(window.location.search);
+
+            if (urlParams.get('from') !== null) {
+                alert(urlParams.get('from') + " erfolgreich gespeichert");
+                window.location.href = window.location.href.split('?')[0];
+            }
+
+            tabelleAufbauen();
+        }
+    </script>
+    <style>
+
+@import url("farben.css");
+
+/* GRUNDEINSTELLUNGEN */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-family: -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Inter, Arial, sans-serif;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--farbe-text);
+    background: var(--farbe-hintergrund);
+}
+
+/* TOPBAR */
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+
+    width: 100%;
+    min-height: 88px;
+    padding: 20px max(28px, calc((100vw - 1100px) / 2));
+
+    background: var(--farbe-oberflaeche);
+    border-bottom: 1px solid var(--farbe-rahmen);
+}
+
+header h2 {
+    margin: 0;
+    font-size: 21px;
+    font-weight: 750;
+    letter-spacing: -0.5px;
+    line-height: 1.3;
+}
+
+/* BUTTONS */
+
+button {
+    padding: 12px 22px;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 650;
+
+    color: var(--farbe-text);
+    background: var(--farbe-oberflaeche);
+
+    border: 1px solid var(--farbe-rahmen);
+    border-radius: 9px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+button:hover {
+    background: var(--farbe-oberflaeche-sanft);
+    border-color: var(--farbe-primaer);
+}
+
+button:active {
+    transform: translateY(1px);
+}
+
+button:focus-visible {
+    outline: 3px solid var(--farbe-fokus);
+    outline-offset: 3px;
+}
+
+/* HAUPTBEREICH */
+
+main {
+    width: 100%;
+    max-width: 1100px;
+
+    margin: 0 auto;
+    padding: 55px 28px 90px;
+}
+
+main h3 {
+    margin: 0;
+
+    font-size: 23px;
+    font-weight: 750;
+    letter-spacing: -0.6px;
+    line-height: 1.35;
+}
+
+/* HINWEIS */
+
+.hinweis {
+    margin: 30px 0 0;
+
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--farbe-text);
+    opacity: 0.75;
+}
+
+/* WERKZEUGLEISTE */
+
+.werkzeugleiste {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+
+    margin-bottom: 30px;
+}
+
+.werkzeug {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    flex: 1;
+}
+
+.werkzeug:last-child {
+    justify-content: flex-end;
+}
+
+.werkzeug input[type="text"] {
+    min-width: 0;
+    width: 180px;
+    padding: 11px 14px;
+
+    font-family: inherit;
+    font-size: 13px;
+
+    color: var(--farbe-text);
+    background: var(--farbe-oberflaeche);
+
+    border: 1px solid var(--farbe-rahmen);
+    border-radius: 9px;
+}
+
+.werkzeug input[type="text"]:focus-visible {
+    outline: 3px solid var(--farbe-fokus);
+    outline-offset: 2px;
+    border-color: var(--farbe-primaer);
+}
+
+.werkzeug label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* TABELLE */
+
+.tabelle_container {
+    width: 100%;
+    overflow-x: auto;
+
+    background: var(--farbe-oberflaeche);
+
+    border: 1px solid var(--farbe-rahmen);
+    border-radius: 14px;
+
+    box-shadow:
+        0 5px 20px var(--farbe-schatten);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+th,
+td {
+    padding: 16px 18px;
+
+    font-size: 15px;
+    border-bottom: 1px solid var(--farbe-rahmen);
+}
+
+th {
+    font-size: 13px;
+    font-weight: 700;
+
+    background: var(--farbe-oberflaeche-sanft);
+    border-bottom: 2px solid var(--farbe-primaer);
+}
+
+th.sortierbar {
+    cursor: pointer;
+    user-select: none;
+}
+
+th.sortierbar::after {
+    content: " ▾";
+    font-size: 11px;
+}
+
+th.sortierbar:hover {
+    background: var(--farbe-primaer-hell);
+}
+
+tbody tr {
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease;
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+tbody tr:hover {
+    background: var(--farbe-oberflaeche-sanft);
+}
+
+/* AUSGEWAEHLTE ZEILE (GRUEN) */
+
+tbody tr.ausgewaehlt {
+    background: rgba(46, 160, 67, 0.15);
+}
+
+tbody tr.ausgewaehlt:hover {
+    background: rgba(46, 160, 67, 0.25);
+}
+
+/* TABLET */
+
+@media (max-width: 800px) {
+
+    header {
+        padding: 20px 24px;
+    }
+
+    main {
+        padding: 40px 24px 70px;
+    }
+}
+
+/* SMARTPHONE */
+
+@media (max-width: 600px) {
+
+    header {
+        min-height: 74px;
+        padding: 16px 18px;
+    }
+
+    header h2 {
+        font-size: 16px;
+    }
+
+    button {
+        padding: 10px 15px;
+        font-size: 12px;
+    }
+
+    main {
+        padding: 32px 18px 60px;
+    }
+
+    main h3 {
+        font-size: 20px;
+    }
+
+    .werkzeugleiste {
+        flex-wrap: wrap;
+    }
+
+    .werkzeug input[type="text"] {
+        width: 120px;
+    }
+
+    th,
+    td {
+        padding: 12px 8px;
+        font-size: 13px;
+    }
+}
+
+/* REDUZIERTE ANIMATIONEN */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        transition: none !important;
+    }
+}
+
+    </style>
+</head>
+<body>
+<header>
+    <h2>FV: Fach MEDT</h2>
+    <button onclick="logout()">Logout</button>
+</header>
+<main>
+    <div class="werkzeugleiste">
+        <div class="werkzeug">
+            <button onclick="suchfeldUmschalten()">Suche</button>
+            <input type="text" id="suchfeld" placeholder="Klasse oder Fach" oninput="tabelleAufbauen()" hidden>
+        </div>
+
+        <h3>Übersicht</h3>
+
+        <div class="werkzeug">
+            <label id="filter_label" hidden><input type="checkbox" id="filter_offen" onchange="tabelleAufbauen()"> Nur offene</label>
+            <button onclick="filterUmschalten()">Filter</button>
+        </div>
+    </div>
+
+    <div class="tabelle_container">
+        <table>
+            <thead>
+                <tr>
+                    <th class="sortierbar" onclick="sortieren('klasse')">Klasse</th>
+                    <th class="sortierbar" onclick="sortieren('fach')">Fach</th>
+                    <th>Eingetr.</th>
+                    <th>Benötigt</th>
+                </tr>
+            </thead>
+            <tbody id="tabelle_body"></tbody>
+        </table>
+    </div>
+
+    <p class="hinweis">Grün = ausgewählt, ⚠ = Überbelegung / Konflikt</p>
+</main>
+</body>
+</html>

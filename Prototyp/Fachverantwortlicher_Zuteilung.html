@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <title>Fachverantwortliche(r) Zuteilung</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        function logout() {
+            window.location.href = "Anmeldung.html";
+        }
+
+        function redirect(file) {
+            window.location.href = file;
+        }
+
+        // Beispieldaten (spaeter vom Server)
+        const wuensche = [
+            { kuerzel: "NUS", label: "Offen", stunden: 4, nachricht: "…", auslastung: 60, tags: "Labor", zugeteilt: true },
+            { kuerzel: "SPC", label: "Wunsch", stunden: 2, nachricht: "…", auslastung: 90, tags: "WebTech", zugeteilt: false }
+        ];
+
+        function zuteilen(index) {
+            wuensche[index].zugeteilt = !wuensche[index].zugeteilt;
+            wuenscheAufbauen();
+        }
+
+        function wuenscheAufbauen() {
+            const container = document.getElementById("wuensche_container");
+            container.innerHTML = "";
+
+            wuensche.forEach((w, i) => {
+                const karte = document.createElement("div");
+                karte.className = "wunsch" + (w.zugeteilt ? " zugeteilt" : "");
+
+                const info = document.createElement("div");
+                info.className = "wunsch_info";
+                [
+                    ["h4", w.kuerzel],
+                    ["p", w.label + ": " + w.stunden + " Std."],
+                    ["p", "Nachricht: „" + w.nachricht + "“"],
+                    ["p", "Auslastung: " + w.auslastung + "%"],
+                    ["p", "Tags: " + w.tags]
+                ].forEach(([tag, text]) => {
+                    const el = document.createElement(tag);
+                    el.textContent = text;
+                    info.appendChild(el);
+                });
+
+                const knopf = document.createElement("button");
+                knopf.textContent = (w.zugeteilt ? "☑" : "☐") + " Zuteilen";
+                knopf.onclick = () => zuteilen(i);
+
+                karte.appendChild(info);
+                karte.appendChild(knopf);
+                container.appendChild(karte);
+            });
+        }
+
+        function speichern() {
+            const zugeteilt = wuensche.filter(w => w.zugeteilt).map(w => w.kuerzel);
+
+            // TODO: Zuteilung am Server speichern
+            redirect("Fachverantwortliche_Ansicht.html?from=" + encodeURIComponent("Zuteilung"));
+        }
+
+        onload = () => {
+            urlParams = new URLSearchParams(window.location.search);
+
+            const klasse = urlParams.get('klasse') ?? "5BI";
+            const fach = urlParams.get('fach') ?? "MEDT";
+            const benoetigt = urlParams.get('benoetigt') ?? "2";
+
+            document.getElementById("klasse").textContent = klasse;
+            document.getElementById("fach").textContent = fach;
+            document.getElementById("benoetigt").textContent = benoetigt;
+
+            wuenscheAufbauen();
+        }
+    </script>
+    <style>
+
+@import url("farben.css");
+
+/* GRUNDEINSTELLUNGEN */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-family: -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Inter, Arial, sans-serif;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--farbe-text);
+    background: var(--farbe-hintergrund);
+}
+
+/* TOPBAR */
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+
+    width: 100%;
+    min-height: 88px;
+    padding: 20px max(28px, calc((100vw - 1100px) / 2));
+
+    background: var(--farbe-oberflaeche);
+    border-bottom: 1px solid var(--farbe-rahmen);
+}
+
+header h2 {
+    margin: 0;
+    font-size: 21px;
+    font-weight: 750;
+    letter-spacing: -0.5px;
+    line-height: 1.3;
+}
+
+/* BUTTONS */
+
+button {
+    padding: 12px 22px;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 650;
+
+    color: var(--farbe-text);
+    background: var(--farbe-oberflaeche);
+
+    border: 1px solid var(--farbe-rahmen);
+    border-radius: 9px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+button:hover {
+    background: var(--farbe-oberflaeche-sanft);
+    border-color: var(--farbe-primaer);
+}
+
+button:active {
+    transform: translateY(1px);
+}
+
+button:focus-visible {
+    outline: 3px solid var(--farbe-fokus);
+    outline-offset: 3px;
+}
+
+/* HAUPTBEREICH */
+
+main {
+    width: 100%;
+    max-width: 1100px;
+
+    margin: 0 auto;
+    padding: 55px 28px 90px;
+}
+
+main h3 {
+    margin: 0;
+
+    font-size: 23px;
+    font-weight: 750;
+    letter-spacing: -0.6px;
+    line-height: 1.35;
+}
+
+/* HINWEIS */
+
+.hinweis {
+    margin: 30px 0 0;
+
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--farbe-text);
+    opacity: 0.75;
+}
+
+/* ZURUECK LINK */
+
+.zurueck {
+    display: inline-block;
+    margin-bottom: 22px;
+
+    font-size: 13px;
+    font-weight: 650;
+    color: var(--farbe-primaer-dunkel);
+    cursor: pointer;
+}
+
+.zurueck:hover {
+    text-decoration: underline;
+}
+
+/* KLASSE / FACH / BENOETIGT */
+
+.kopfzeile {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 40px;
+
+    margin-bottom: 38px;
+}
+
+.kopfzeile p {
+    margin: 0;
+
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.kopfzeile span {
+    font-weight: 750;
+}
+
+main h4.abschnitt {
+    margin: 0 0 16px;
+
+    font-size: 14px;
+    font-weight: 600;
+    opacity: 0.75;
+}
+
+/* WUNSCH KACHELN */
+
+.wuensche_container {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+
+    width: 100%;
+}
+
+.wunsch {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 22px;
+
+    padding: 26px 32px;
+
+    background: var(--farbe-oberflaeche);
+
+    border: 1px solid var(--farbe-rahmen);
+    border-radius: 14px;
+
+    box-shadow:
+        0 5px 20px var(--farbe-schatten);
+
+    overflow: hidden;
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+/* GELBER AKZENT LINKS */
+
+.wunsch::before {
+    content: "";
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+
+    width: 5px;
+
+    background: var(--farbe-primaer);
+}
+
+/* ZUGETEILT (GRUEN) */
+
+.wunsch.zugeteilt {
+    background: rgba(46, 160, 67, 0.15);
+    border-color: rgba(46, 160, 67, 0.6);
+}
+
+.wunsch_info h4 {
+    margin: 0 0 8px;
+
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+
+.wunsch_info p {
+    margin: 0 0 4px;
+
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.wunsch button {
+    width: 100%;
+}
+
+/* SAVE BUTTON */
+
+.speichern_leiste {
+    display: flex;
+    justify-content: flex-end;
+
+    margin-top: 50px;
+}
+
+.speichern_leiste button {
+    min-width: 160px;
+}
+
+/* TABLET */
+
+@media (max-width: 800px) {
+
+    header {
+        padding: 20px 24px;
+    }
+
+    main {
+        padding: 40px 24px 70px;
+    }
+
+    .wuensche_container {
+        gap: 14px;
+    }
+
+    .wunsch {
+        padding: 23px 22px;
+    }
+}
+
+/* SMARTPHONE */
+
+@media (max-width: 600px) {
+
+    header {
+        min-height: 74px;
+        padding: 16px 18px;
+    }
+
+    header h2 {
+        font-size: 16px;
+    }
+
+    button {
+        padding: 10px 15px;
+        font-size: 12px;
+    }
+
+    main {
+        padding: 32px 18px 60px;
+    }
+
+    .kopfzeile p {
+        font-size: 15px;
+    }
+
+    .wuensche_container {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .wunsch {
+        border-radius: 11px;
+    }
+
+    .speichern_leiste button {
+        width: 100%;
+    }
+}
+
+/* REDUZIERTE ANIMATIONEN */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        transition: none !important;
+    }
+}
+
+    </style>
+</head>
+<body>
+<header>
+    <h2>FV: Fach MEDT</h2>
+    <button onclick="logout()">Logout</button>
+</header>
+<main>
+    <a class="zurueck" onclick="redirect('Fachverantwortliche_Ansicht.html')">← Zurück zur Ansicht</a>
+
+    <div class="kopfzeile">
+        <p>Klasse: <span id="klasse"></span></p>
+        <p>Fach: <span id="fach"></span></p>
+        <p>Benötigt: <span id="benoetigt"></span> Std.</p>
+    </div>
+
+    <h4 class="abschnitt">Eingetragene Wünsche</h4>
+    <div class="wuensche_container" id="wuensche_container"></div>
+
+    <p class="hinweis">Verfügbar (ohne Wunsch): FIN (2 Std. frei)</p>
+
+    <div class="speichern_leiste">
+        <button onclick="speichern()">Save</button>
+    </div>
+</main>
+</body>
+</html>
