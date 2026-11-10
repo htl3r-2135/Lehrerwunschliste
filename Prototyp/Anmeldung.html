@@ -13,13 +13,46 @@
             const email = document.getElementById("email").value.trim();
             const passwort = document.getElementById("passwort").value;
 
-            if (email === "" || passwort === "") {
-                alert("Bitte E-Mail und Passwort eingeben");
+            if (!emailValidator() || passwort === "") {
+                console.log(emailValidator());
+                alert("Bitte valide E-Mail und Passwort eingeben");
                 return;
             }
 
-            // TODO: Anmeldung am Server pruefen, danach Weiterleitung je nach Rolle
-            redirect("Admin_Ansicht.html");
+            switch(email.toLowerCase()) {
+                case "bay@htl.rennweg.at":
+                    redirect("Fachverantwortliche_Ansicht.html");
+                break;     
+                case "sdo@htl.rennweg.at":
+                    redirect("Admin_Ansicht.html");
+                break;
+                case "swr@htl.rennweg.at":
+                    redirect("Lehrer_Ansicht.html");
+                break;
+                default:
+                    alert("Diesen User gibt es nicht. Bitte überprüfen Sie die E-Mail-Adresse.");
+                break;
+            }    
+            
+        }
+
+        function passwortZuruecksetzen() {
+            const email = document.getElementById("email").value.trim();
+            if (!emailValidator()) {
+                alert("Bitte geben Sie Ihre E-Mail-Adresse ein, um das Passwort zurückzusetzen.");
+                return;
+            }else {
+                redirect("Passwort_aendern.html");
+            }
+        }
+
+        function emailValidator() {
+            const email = document.getElementById("email").value.trim();
+            const checker = /[a-z]{3}@htl.rennweg.at$/;
+            if (checker.test(email.toLowerCase())) {
+                return true
+            }
+            return false;
         }
 
         function microsoftLogin() {
@@ -296,7 +329,7 @@ button:focus-visible {
         <div class="feld">
             <label for="passwort">Passwort</label>
             <input type="password" id="passwort" autocomplete="current-password">
-            <button class="button_klein" onclick="redirect('Passwort_Aendern.html')">Passwort zurücksetzen</button>
+            <button class="button_klein" onclick="passwortZuruecksetzen()">Passwort zurücksetzen</button>
         </div>
 
         <div class="buttons">
@@ -304,8 +337,6 @@ button:focus-visible {
             <p class="oder">– oder –</p>
             <button class="button_microsoft" onclick="microsoftLogin()">Mit Microsoft anmelden</button>
         </div>
-
-        <p class="hinweis">Erster Login: OTP per E-Mail → <a href="Passwort_Aendern.html">Passwort ändern</a></p>
     </div>
 </main>
 </body>
