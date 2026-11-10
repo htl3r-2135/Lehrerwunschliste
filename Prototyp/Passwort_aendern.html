@@ -23,7 +23,13 @@
         }
     </script>
     <style>
+
 @import url("farben.css");
+
+/* ==========================================
+   LWL – NEUES PASSWORT FESTLEGEN
+   Einheitliches LWL-Design
+   ========================================== */
 
 /* GRUNDEINSTELLUNGEN */
 
@@ -39,30 +45,40 @@ html {
 }
 
 body {
-    margin: 0;
-    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
+
+    min-height: 100vh;
+    margin: 0;
     padding: 28px 18px;
 
-    color: var(--farbe-text);
     background: var(--farbe-hintergrund);
+    color: var(--farbe-text);
+
+    font-size: 14px;
+    line-height: 1.5;
 }
 
-/* KARTE */
+/* ==========================================
+   PASSWORT-KARTE
+   ========================================== */
 
 .login_karte {
     position: relative;
 
     width: 100%;
     max-width: 520px;
+
     padding: 44px 48px 36px;
 
     background: var(--farbe-oberflaeche);
+
     border: 1px solid var(--farbe-rahmen);
-    border-radius: 14px;
-    box-shadow: 0 5px 20px var(--farbe-schatten);
+    border-radius: 15px;
+
+    box-shadow:
+        0 7px 24px var(--farbe-schatten);
 
     overflow: hidden;
 }
@@ -71,73 +87,143 @@ body {
 
 .login_karte::before {
     content: "";
+
     position: absolute;
     left: 0;
     top: 0;
     bottom: 0;
+
     width: 5px;
+
     background: var(--farbe-primaer);
 }
 
+/* ==========================================
+   ÜBERSCHRIFT
+   ========================================== */
+
 h1 {
-    margin: 0 0 40px;
+    margin: 0 0 34px;
+
     text-align: center;
 
-    font-size: 23px;
+    font-size: 24px;
     font-weight: 750;
     letter-spacing: -0.6px;
-    line-height: 1.35;
+    line-height: 1.3;
+
+    color: var(--farbe-text);
 }
 
-/* FORMULAR */
+/* ==========================================
+   FORMULAR
+   ========================================== */
+
+form {
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+}
+
+/* BESCHRIFTUNGEN */
 
 label {
     display: block;
-    margin: 0 0 6px;
+
+    margin-bottom: 9px;
 
     font-size: 13px;
-    color: var(--farbe-text-sanft, #6b6b6b);
-}
+    font-weight: 650;
 
-input {
-    width: 100%;
-    padding: 13px 14px;
-    margin-bottom: 20px;
-
-    font-family: inherit;
-    font-size: 15px;
     color: var(--farbe-text);
-
-    background: var(--farbe-oberflaeche);
-    border: 1px solid var(--farbe-rahmen);
-    border-radius: 9px;
 }
 
-input:focus-visible {
-    outline: 3px solid var(--farbe-fokus);
-    outline-offset: 1px;
-    border-color: var(--farbe-primaer);
-}
+/* PASSWORT-EINGABEFELDER */
 
-#fehler {
-    min-height: 20px;
-    margin: -8px 0 12px;
-    font-size: 13px;
-    color: #b3261e;
-}
-
-/* BUTTON */
-
-button {
-    display: block;
+input[type="password"] {
     width: 100%;
-    max-width: 260px;
-    margin: 12px auto 0;
-    padding: 12px 22px;
+    min-height: 46px;
+
+    padding: 12px 15px;
+    margin-bottom: 24px;
 
     font-family: inherit;
     font-size: 14px;
-    font-weight: 650;
+    font-weight: 500;
+
+    color: var(--farbe-text);
+    background: var(--farbe-oberflaeche);
+
+    border: 1px solid var(--farbe-rahmen);
+    border-radius: 9px;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
+}
+
+/* HOVER */
+
+input[type="password"]:hover {
+    border-color: var(--farbe-primaer);
+}
+
+/* FOKUS */
+
+input[type="password"]:focus {
+    border-color: var(--farbe-primaer);
+
+    box-shadow:
+        0 0 0 3px var(--farbe-primaer-hell);
+}
+
+/* ==========================================
+   FEHLERMELDUNG
+   ========================================== */
+
+#fehler {
+    margin: 0;
+
+    color: #b3261e;
+
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+/* NUR ANZEIGEN, WENN FEHLER VORHANDEN */
+
+#fehler:not(:empty) {
+    margin: -6px 0 20px;
+    padding: 12px 15px;
+
+    background: #fff1f0;
+
+    border: 1px solid #f1c6c3;
+    border-radius: 9px;
+}
+
+/* ==========================================
+   BUTTONS
+   ========================================== */
+
+button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    min-height: 45px;
+
+    padding: 12px 22px;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
 
     color: var(--farbe-text);
     background: var(--farbe-oberflaeche);
@@ -148,14 +234,9 @@ button {
     cursor: pointer;
 
     transition:
-        background 0.2s ease,
+        background-color 0.2s ease,
         border-color 0.2s ease,
         transform 0.2s ease;
-}
-
-button:hover {
-    background: var(--farbe-oberflaeche-sanft);
-    border-color: var(--farbe-primaer);
 }
 
 button:active {
@@ -167,26 +248,94 @@ button:focus-visible {
     outline-offset: 3px;
 }
 
-.hinweis {
-    margin: 30px 0 0;
-    font-size: 13px;
-    color: var(--farbe-text-sanft, #6b6b6b);
+/* ==========================================
+   SPEICHERN-BUTTON
+   ========================================== */
+
+button[type="submit"] {
+    margin-top: 10px;
+
+    background: var(--farbe-primaer);
+    border-color: var(--farbe-primaer);
+    color: var(--farbe-text);
 }
 
-/* SMARTPHONE */
+button[type="submit"]:hover {
+    background: var(--farbe-primaer-hover);
+    border-color: var(--farbe-primaer-hover);
+}
+
+/* ==========================================
+   RETURN-BUTTON
+   ========================================== */
+
+.login_karte > button {
+    margin-top: 12px;
+
+    background: var(--farbe-oberflaeche);
+    border: 1px solid var(--farbe-rahmen);
+
+    color: var(--farbe-text);
+}
+
+.login_karte > button:hover {
+    background: var(--farbe-oberflaeche-sanft);
+    border-color: var(--farbe-primaer);
+}
+
+/* ==========================================
+   HINWEISTEXT
+   ========================================== */
+
+.hinweis {
+    margin: 27px 0 0;
+
+    text-align: center;
+
+    font-size: 12px;
+    line-height: 1.6;
+
+    color: var(--farbe-text-sekundaer);
+}
+
+/* ==========================================
+   SMARTPHONE
+   ========================================== */
 
 @media (max-width: 600px) {
+
+    body {
+        padding: 20px 14px;
+    }
+
     .login_karte {
         padding: 34px 24px 28px;
+        border-radius: 12px;
     }
 
     h1 {
-        font-size: 20px;
+        font-size: 21px;
         margin-bottom: 28px;
+    }
+
+    input[type="password"] {
+        min-height: 44px;
+        padding: 11px 13px;
+        margin-bottom: 20px;
+    }
+
+    button {
+        min-height: 44px;
+    }
+
+    .hinweis {
+        margin-top: 23px;
     }
 }
 
-/* REDUZIERTE ANIMATIONEN */
+/* ==========================================
+   REDUZIERTE ANIMATIONEN
+   ========================================== */
 
 @media (prefers-reduced-motion: reduce) {
 
@@ -196,6 +345,7 @@ button:focus-visible {
         transition: none !important;
     }
 }
+
     </style>
 </head>
 <body>
@@ -214,7 +364,7 @@ button:focus-visible {
         <button type="submit">Speichern</button>
     </form>
 
-    <button onclick="window.location.href='Anmeldung.html'">Return</button>
+    <button onclick="window.location.href='Anmeldung.html'">Zurück</button>
 
     <p class="hinweis">Danach: Weiterleitung je nach Rolle</p>
 </main>
