@@ -16,9 +16,23 @@
         // Beispieldaten (spaeter vom Server)
         const zeilen = [
             { klasse: "5BI", fach: "MEDT", eingetragen: 2, konflikte: 1, benoetigt: 1, ausgewaehlt: true },
-            { klasse: "5CN", fach: "AM", eingetragen: 0, konflikte: 0, benoetigt: 1, ausgewaehlt: false },
-            { klasse: "4CN", fach: "AM", eingetragen: 0, konflikte: 0, benoetigt: 1, ausgewaehlt: false }
+            { klasse: "5CN", fach: "AM",   eingetragen: 0, konflikte: 0, benoetigt: 1, ausgewaehlt: false },
+            { klasse: "4CN", fach: "AM",   eingetragen: 0, konflikte: 0, benoetigt: 1, ausgewaehlt: false },
+            { klasse: "3AI", fach: "MEDT", eingetragen: 1, konflikte: 0, benoetigt: 1, ausgewaehlt: false },
+            { klasse: "4BI", fach: "MEDT", eingetragen: 0, konflikte: 0, benoetigt: 2, ausgewaehlt: false },
+            { klasse: "2CI", fach: "MEDT", eingetragen: 3, konflikte: 2, benoetigt: 1, ausgewaehlt: false },
+            { klasse: "5AI", fach: "SYT",  eingetragen: 2, konflikte: 0, benoetigt: 2, ausgewaehlt: false },
+            { klasse: "3BN", fach: "SYT",  eingetragen: 1, konflikte: 0, benoetigt: 3, ausgewaehlt: false },
+            { klasse: "1AI", fach: "AM",   eingetragen: 2, konflikte: 1, benoetigt: 2, ausgewaehlt: false },
+            { klasse: "2AI", fach: "AM",   eingetragen: 1, konflikte: 0, benoetigt: 1, ausgewaehlt: false }
         ];
+
+        // Status einer Zeile: "konflikt", "offen" oder "vollstaendig"
+        function statusVon(z) {
+            if (z.konflikte > 0) return "konflikt";
+            if (z.eingetragen < z.benoetigt) return "offen";
+            return "vollstaendig";
+        }
 
         let sortierung = { spalte: null, aufsteigend: true };
 
@@ -36,18 +50,38 @@
         }
 
         function filterUmschalten() {
-            const label = document.getElementById("filter_label");
-            label.hidden = !label.hidden;
-            if (label.hidden) { document.getElementById("filter_offen").checked = false; tabelleAufbauen(); }
+            const panel = document.getElementById("filter_panel");
+            panel.hidden = !panel.hidden;
+        }
+
+        function filterZuruecksetzen() {
+            document.getElementById("filter_fach").value = "";
+            document.getElementById("filter_status").value = "";
+            tabelleAufbauen();
+        }
+
+        function filterOptionenAufbauen() {
+            const select = document.getElementById("filter_fach");
+            [...new Set(zeilen.map(z => z.fach))].sort().forEach(fach => {
+                const option = document.createElement("option");
+                option.value = fach;
+                option.textContent = fach;
+                select.appendChild(option);
+            });
         }
 
         function tabelleAufbauen() {
             const suche = document.getElementById("suchfeld").value.trim().toLowerCase();
-            const nurOffene = document.getElementById("filter_offen").checked;
+            const fach = document.getElementById("filter_fach").value;
+            const status = document.getElementById("filter_status").value;
+
+            const filterAktiv = (fach !== "" || status !== "");
+            document.getElementById("filter_knopf").textContent = filterAktiv ? "Filter •" : "Filter";
 
             let daten = zeilen.filter(z =>
                 (z.klasse + " " + z.fach).toLowerCase().includes(suche) &&
-                (!nurOffene || z.eingetragen < z.benoetigt || z.konflikte > 0)
+                (fach === "" || z.fach === fach) &&
+                (status === "" || statusVon(z) === status)
             );
 
             if (sortierung.spalte) {
@@ -57,6 +91,16 @@
 
             const tbody = document.getElementById("tabelle_body");
             tbody.innerHTML = "";
+
+            if (daten.length === 0) {
+                const tr = document.createElement("tr");
+                const td = document.createElement("td");
+                td.colSpan = 4;
+                td.textContent = "Keine Einträge gefunden";
+                tr.className = "leer";
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+            }
 
             daten.forEach(z => {
                 const tr = document.createElement("tr");
@@ -88,6 +132,7 @@
                 window.location.href = window.location.href.split('?')[0];
             }
 
+            filterOptionenAufbauen();
             tabelleAufbauen();
         }
     </script>
@@ -260,6 +305,64 @@ main h3 {
     white-space: nowrap;
 }
 
+/* FILTER PANEL */
+
+.filter_panel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 16px;
+
+    margin: -10px 0 30px;
+    padding: 18px 22px;
+
+    background: var(--farbe-oberflaeche);
+
+    border: 1px solid var(--farbe-rahmen);
+    border-radius: 14px;
+}
+
+.filter_panel[hidden] {
+    display: none;
+}
+
+.filter_panel .feld {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filter_panel label {
+    font-size: 12px;
+    font-weight: 600;
+    opacity: 0.75;
+}
+
+.filter_panel select {
+    min-width: 160px;
+    padding: 10px 12px;
+
+    font-family: inherit;
+    font-size: 13px;
+
+    color: var(--farbe-text);
+    background: var(--farbe-oberflaeche);
+
+    border: 1px solid var(--farbe-rahmen);
+    border-radius: 9px;
+}
+
+.filter_panel select:focus-visible {
+    outline: 3px solid var(--farbe-fokus);
+    outline-offset: 2px;
+    border-color: var(--farbe-primaer);
+}
+
+tbody tr.leer {
+    cursor: default;
+    opacity: 0.7;
+}
+
 /* TABELLE */
 
 .tabelle_container {
@@ -418,9 +521,29 @@ tbody tr.ausgewaehlt:hover {
         <h3>Übersicht</h3>
 
         <div class="werkzeug">
-            <label id="filter_label" hidden><input type="checkbox" id="filter_offen" onchange="tabelleAufbauen()"> Nur offene</label>
-            <button onclick="filterUmschalten()">Filter</button>
+            <button id="filter_knopf" onclick="filterUmschalten()">Filter</button>
         </div>
+    </div>
+
+    <div class="filter_panel" id="filter_panel" hidden>
+        <div class="feld">
+            <label for="filter_fach">Fach</label>
+            <select id="filter_fach" onchange="tabelleAufbauen()">
+                <option value="">Alle Fächer</option>
+            </select>
+        </div>
+
+        <div class="feld">
+            <label for="filter_status">Status</label>
+            <select id="filter_status" onchange="tabelleAufbauen()">
+                <option value="">Alle</option>
+                <option value="offen">Offen (zu wenig eingetragen)</option>
+                <option value="konflikt">Konflikt ⚠ (Überbelegung)</option>
+                <option value="vollstaendig">Vollständig</option>
+            </select>
+        </div>
+
+        <button onclick="filterZuruecksetzen()">Zurücksetzen</button>
     </div>
 
     <div class="tabelle_container">
