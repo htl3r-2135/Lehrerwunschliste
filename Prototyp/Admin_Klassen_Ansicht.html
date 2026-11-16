@@ -60,8 +60,16 @@
             window.location.href = "Anmeldung.html";
         }
 
+        /* Geführte Stammdatenerstellung (?gefuehrt=1): nur dann werden
+           "Schritt X von 4" und die Zurück/Weiter-Leiste angezeigt. */
+        const GEFUEHRT =
+            new URLSearchParams(window.location.search).get("gefuehrt") === "1";
+
         function redirect(file) {
-            window.location.href = file + (VON_NEUER_UEBERSICHT ? "?start=neu" : "");
+            const parameter = [];
+            if (VON_NEUER_UEBERSICHT) parameter.push("start=neu");
+            if (GEFUEHRT) parameter.push("gefuehrt=1");
+            window.location.href = file + (parameter.length ? "?" + parameter.join("&") : "");
         }
 
         function zurUebersicht(from) {
@@ -804,9 +812,16 @@ main > h3 {
     }
 }
 
+/* GEFÜHRTE STAMMDATENERSTELLUNG */
+
+body:not(.gefuehrt) .nur-gefuehrt {
+    display: none !important;
+}
+
     </style>
 </head>
 <body>
+<script>if (GEFUEHRT) document.body.classList.add("gefuehrt");</script>
 <header>
     <h2>Klassen | Schuljahr 2026/27</h2>
     <button onclick="logout()">Logout</button>
@@ -817,7 +832,7 @@ main > h3 {
     <div id="meldung" role="status"></div>
 
     <div class="karte">
-        <h3>Klasse erstellen <span>Schritt 2 von 4</span></h3>
+        <h3>Klasse erstellen <span class="nur-gefuehrt">Schritt 2 von 4</span></h3>
         <form class="inhalt" id="formular" novalidate>
             <div class="zeile">
                 <div class="feld">
@@ -870,9 +885,9 @@ main > h3 {
         </div>
     </div>
 
-    <div class="leiste verteilt">
+    <div class="leiste verteilt nur-gefuehrt">
         <button onclick="redirect('Admin_Abteilungen_Ansicht.html')">Zurück</button>
-        <button class="primaer" onclick="redirect('Admin_Fächer_Ansicht.html')">Weiter</button>
+        <button class="primaer" onclick="redirect('Admin_Faecher_Ansicht.html')">Weiter</button>
     </div>
 </main>
 <script>

@@ -60,8 +60,16 @@
             window.location.href = "Anmeldung.html";
         }
 
+        /* Geführte Stammdatenerstellung (?gefuehrt=1): nur dann werden
+           "Schritt X von 4" und die Zurück/Weiter-Leiste angezeigt. */
+        const GEFUEHRT =
+            new URLSearchParams(window.location.search).get("gefuehrt") === "1";
+
         function redirect(file) {
-            window.location.href = file + (VON_NEUER_UEBERSICHT ? "?start=neu" : "");
+            const parameter = [];
+            if (VON_NEUER_UEBERSICHT) parameter.push("start=neu");
+            if (GEFUEHRT) parameter.push("gefuehrt=1");
+            window.location.href = file + (parameter.length ? "?" + parameter.join("&") : "");
         }
 
         function zurUebersicht(from) {
@@ -804,9 +812,16 @@ main > h3 {
     }
 }
 
+/* GEFÜHRTE STAMMDATENERSTELLUNG */
+
+body:not(.gefuehrt) .nur-gefuehrt {
+    display: none !important;
+}
+
     </style>
 </head>
 <body>
+<script>if (GEFUEHRT) document.body.classList.add("gefuehrt");</script>
 <header>
     <h2>Lehrer | Schuljahr 2026/27</h2>
     <button onclick="logout()">Logout</button>
@@ -817,7 +832,7 @@ main > h3 {
     <div id="meldung" role="status"></div>
 
     <div class="karte">
-        <h3>Lehrer erstellen <span>Schritt 4 von 4</span></h3>
+        <h3>Lehrer erstellen <span class="nur-gefuehrt">Schritt 4 von 4</span></h3>
         <form class="inhalt" id="formular" novalidate>
             <div class="zeile">
                 <div class="feld schmal">
@@ -835,8 +850,11 @@ main > h3 {
                     <label for="email">E-Mail</label>
                     <input type="email" id="email" placeholder="z. B. mus@htl.rennweg.at" autocomplete="off">
                 </div>
+                <div class="feld schmal">
+                    <label for="stunden">Wochenstd.</label>
+                    <input type="number" id="stunden" min="1" max="30" placeholder="z. B. 22">
+                </div>
             </div>
-
             <div class="leiste verteilt">
                 <p class="hinweis">→ Lehrer erhält E-Mail mit OTP zur Anmeldung</p>
                 <button class="primaer" type="submit">Speichern</button>
@@ -849,15 +867,15 @@ main > h3 {
         <div class="tabelle">
             <table>
                 <thead>
-                    <tr><th>Kürzel</th><th>Name</th><th>E-Mail</th><th>Löschen</th></tr>
+                    <tr><th>Kürzel</th><th>Name</th><th>E-Mail</th><th>Std.</th><th>Löschen</th></tr>
                 </thead>
                 <tbody id="liste"></tbody>
             </table>
         </div>
     </div>
 
-    <div class="leiste verteilt">
-        <button onclick="redirect('Admin_Fächer_Ansicht.html')">Zurück</button>
+    <div class="leiste verteilt nur-gefuehrt">
+        <button onclick="redirect('Admin_Faecher_Ansicht.html')">Zurück</button>
         <button class="primaer" onclick="zurUebersicht('Stammdaten')">Fertig</button>
     </div>
 </main>
@@ -871,8 +889,8 @@ main > h3 {
         el("liste").innerHTML = daten.lehrer.length
             ? daten.lehrer.map((l, i) =>
                 "<tr><td>" + esc(l.kuerzel) + "</td><td>" + esc(l.name) + "</td><td>" +
-                esc(l.email) + "</td>" + loeschButton(i, l.kuerzel) + "</tr>").join("")
-            : leereZeile(4, "Noch keine Lehrer angelegt");
+                esc(l.email) + "</td><td>" + (l.stunden || "–") + "</td>" + loeschButton(i, l.kuerzel) + "</tr>").join("")
+            : leereZeile(5, "Noch keine Lehrer angelegt");
     }
 
     /* E-Mail aus dem Kürzel vorschlagen (MUS -> mus@htl.rennweg.at) */
@@ -894,6 +912,7 @@ main > h3 {
         const kuerzel = el("kuerzel").value.trim().toUpperCase();
         const name = el("name").value.trim();
         const email = el("email").value.trim().toLowerCase();
+        const stunden = parseInt(el("stunden").value, 10);
 
         if (!/^[A-ZÄÖÜ]{3}$/.test(kuerzel))
             return meldung("Bitte ein Kürzel mit genau 3 Buchstaben eingeben.", true);
@@ -904,8 +923,11 @@ main > h3 {
             return meldung("Das Kürzel „" + kuerzel + "“ ist bereits vergeben.", true);
         if (daten.lehrer.some(l => gleich(l.email, email)))
             return meldung("Die E-Mail-Adresse „" + email + "“ ist bereits vergeben.", true);
+        if (!(stunden > 0))
+            return meldung("Bitte die Stundenanzahl angeben.", true);
 
-        daten.lehrer.push({ kuerzel: kuerzel, name: name, email: email });
+
+        daten.lehrer.push({ kuerzel: kuerzel, name: name, email: email, stunden: stunden });
         speichern(daten);
 
         el("formular").reset();

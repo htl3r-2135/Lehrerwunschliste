@@ -60,8 +60,16 @@
             window.location.href = "Anmeldung.html";
         }
 
+        /* Geführte Stammdatenerstellung (?gefuehrt=1): nur dann werden
+           "Schritt X von 4" und die Zurück/Weiter-Leiste angezeigt. */
+        const GEFUEHRT =
+            new URLSearchParams(window.location.search).get("gefuehrt") === "1";
+
         function redirect(file) {
-            window.location.href = file + (VON_NEUER_UEBERSICHT ? "?start=neu" : "");
+            const parameter = [];
+            if (VON_NEUER_UEBERSICHT) parameter.push("start=neu");
+            if (GEFUEHRT) parameter.push("gefuehrt=1");
+            window.location.href = file + (parameter.length ? "?" + parameter.join("&") : "");
         }
 
         function zurUebersicht(from) {
@@ -804,9 +812,16 @@ main > h3 {
     }
 }
 
+/* GEFÜHRTE STAMMDATENERSTELLUNG */
+
+body:not(.gefuehrt) .nur-gefuehrt {
+    display: none !important;
+}
+
     </style>
 </head>
 <body>
+<script>if (GEFUEHRT) document.body.classList.add("gefuehrt");</script>
 <header>
     <h2>Fächer | Schuljahr 2026/27</h2>
     <button onclick="logout()">Logout</button>
@@ -817,7 +832,7 @@ main > h3 {
     <div id="meldung" role="status"></div>
 
     <div class="karte">
-        <h3>Fach erstellen <span>Schritt 3 von 4</span></h3>
+        <h3><span id="formular-titel">Fach erstellen</span> <span class="nur-gefuehrt">Schritt 3 von 4</span></h3>
         <form class="inhalt" id="formular" novalidate>
             <div class="zeile">
                 <div class="feld">
@@ -852,7 +867,8 @@ main > h3 {
             </div>
 
             <div class="leiste">
-                <button class="primaer" type="submit">Speichern</button>
+                <button type="button" id="abbrechen" hidden>Abbrechen</button>
+                <button class="primaer" type="submit" id="speichern">Speichern</button>
             </div>
         </form>
     </div>
@@ -864,7 +880,7 @@ main > h3 {
                 <thead>
                     <tr>
                         <th>Name</th><th>Art</th><th>Abteilungen</th><th>Schulstufen</th>
-                        <th>Wochenstd.</th><th>Gruppenteiler</th><th>Löschen</th>
+                        <th>Wochenstd.</th><th>Gruppenteiler</th><th>Bearbeiten</th><th>Löschen</th>
                     </tr>
                 </thead>
                 <tbody id="liste"></tbody>
@@ -872,7 +888,7 @@ main > h3 {
         </div>
     </div>
 
-    <div class="leiste verteilt">
+    <div class="leiste verteilt nur-gefuehrt">
         <button onclick="redirect('Admin_Klassen_Ansicht.html')">Zurück</button>
         <button class="primaer" onclick="redirect('Admin_Lehrer_Ansicht.html')">Weiter</button>
     </div>
@@ -887,6 +903,14 @@ main > h3 {
         return Array.from(document.querySelectorAll('input[name="' + gruppe + '"]:checked'), c => c.value);
     }
 
+    /* Index des Fachs, das gerade bearbeitet wird (null = neues Fach anlegen) */
+    let bearbeitenIndex = null;
+
+    function bearbeitenButton(index, name) {
+        return '<td class="loeschen"><button type="button" data-bearbeiten="' + index +
+            '" aria-label="' + esc(name) + ' bearbeiten">✎</button></td>';
+    }
+
     function anzeigen() {
         const daten = laden();
         el("anzahl").textContent = "(" + daten.faecher.length + ")";
@@ -894,9 +918,46 @@ main > h3 {
             ? daten.faecher.map((f, i) =>
                 "<tr><td>" + esc(f.name) + "</td><td>" + esc(f.art) + "</td><td>" +
                 esc(f.abteilungen.join(", ")) + "</td><td>" + f.stufen.join(", ") + "</td><td>" +
-                f.wochenstd + "</td><td>" + (f.teiler || "–") + "</td>" + loeschButton(i, f.name) + "</tr>").join("")
-            : leereZeile(7, "Noch keine Fächer angelegt");
+                f.wochenstd + "</td><td>" + (f.teiler || "–") + "</td>" +
+                bearbeitenButton(i, f.name) + loeschButton(i, f.name) + "</tr>").join("")
+            : leereZeile(8, "Noch keine Fächer angelegt");
     }
+
+    function bearbeitenBeenden() {
+        bearbeitenIndex = null;
+        el("formular").reset();
+        el("formular-titel").textContent = "Fach erstellen";
+        el("speichern").textContent = "Speichern";
+        el("abbrechen").hidden = true;
+    }
+
+    function bearbeitenStarten(index) {
+        const fach = laden().faecher[index];
+        if (!fach) return;
+        bearbeitenIndex = index;
+
+        el("name").value = fach.name;
+        el("art").value = fach.art;
+        document.querySelectorAll('input[name="abteilung"]').forEach(c => {
+            c.checked = fach.abteilungen.includes(c.value);
+        });
+        document.querySelectorAll('input[name="stufe"]').forEach(c => {
+            c.checked = fach.stufen.includes(Number(c.value));
+        });
+        el("wochenstd").value = fach.wochenstd;
+        el("teiler").value = fach.teiler || "";
+
+        el("formular-titel").textContent = "Fach „" + fach.name + "“ bearbeiten";
+        el("speichern").textContent = "Änderungen speichern";
+        el("abbrechen").hidden = false;
+        el("formular").scrollIntoView({ behavior: "smooth", block: "center" });
+        el("name").focus();
+    }
+
+    el("abbrechen").addEventListener("click", () => {
+        bearbeitenBeenden();
+        meldung("Bearbeiten abgebrochen.");
+    });
 
     const abteilungen = laden().abteilungen;
     el("abteilungen").innerHTML = abteilungen.length
@@ -918,22 +979,26 @@ main > h3 {
         if (!gewaehlteAbteilungen.length) return meldung("Bitte mindestens eine Abteilung auswählen.", true);
         if (!stufen.length) return meldung("Bitte mindestens eine Schulstufe auswählen.", true);
         if (!(wochenstd > 0)) return meldung("Bitte die Wochenstunden angeben.", true);
-        if (daten.faecher.some(f => gleich(f.name, name)))
+        if (daten.faecher.some((f, i) => i !== bearbeitenIndex && gleich(f.name, name)))
             return meldung("Das Fach „" + name + "“ gibt es bereits.", true);
 
-        daten.faecher.push({
+        const fach = {
             name: name,
             art: el("art").value,
             abteilungen: gewaehlteAbteilungen,
             stufen: stufen,
             wochenstd: wochenstd,
             teiler: teiler > 0 ? teiler : null
-        });
+        };
+
+        const warBearbeiten = bearbeitenIndex !== null;
+        if (warBearbeiten) daten.faecher[bearbeitenIndex] = fach;
+        else daten.faecher.push(fach);
         speichern(daten);
 
-        el("formular").reset();
+        bearbeitenBeenden();
         el("name").focus();
-        meldung("Fach „" + name + "“ gespeichert.");
+        meldung("Fach „" + name + "“ " + (warBearbeiten ? "geändert." : "gespeichert."));
         anzeigen();
     });
 
@@ -941,9 +1006,18 @@ main > h3 {
         const button = e.target.closest("button");
         if (!button) return;
 
+        if (button.dataset.bearbeiten !== undefined) {
+            bearbeitenStarten(Number(button.dataset.bearbeiten));
+            return;
+        }
+
+        const index = Number(button.dataset.index);
         const daten = laden();
-        const fach = daten.faecher.splice(Number(button.dataset.index), 1)[0];
+        const fach = daten.faecher.splice(index, 1)[0];
         speichern(daten);
+
+        if (bearbeitenIndex === index) bearbeitenBeenden();
+        else if (bearbeitenIndex !== null && bearbeitenIndex > index) bearbeitenIndex--;
 
         meldung("Fach „" + fach.name + "“ gelöscht.");
         anzeigen();

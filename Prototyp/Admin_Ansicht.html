@@ -126,6 +126,33 @@ main h3 {
     line-height: 1.35;
 }
 
+/* KOPFZEILE MIT "GEFÜHRTE STAMMDATENERSTELLUNG" */
+
+.stammdaten_kopf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 20px;
+
+    margin: 0 0 30px;
+}
+
+.stammdaten_kopf h3 {
+    margin: 0;
+}
+
+button.primaer {
+    color: #fff;
+    background: var(--farbe-primaer);
+    border-color: var(--farbe-primaer);
+}
+
+button.primaer:hover {
+    background: var(--farbe-primaer-dunkel);
+    border-color: var(--farbe-primaer-dunkel);
+}
+
 /* STAMMDATEN CONTAINER */
 
 .stammdaten_container {
@@ -355,7 +382,12 @@ main h3 {
     <button onclick="logout()">Logout</button>
 </header>
 <main>
-    <h3>Stammdaten für das kommende Schuljahr</h3>
+    <div class="stammdaten_kopf">
+        <h3>Stammdaten für das kommende Schuljahr</h3>
+        <button class="primaer" onclick="redirect('Admin_Abteilungen_Ansicht.html?gefuehrt=1')">
+            Geführte Stammdatenerstellung
+        </button>
+    </div>
     <div class="stammdaten_container">
         <div class="stammdaten" onclick="redirect('Admin_Klassen_Ansicht.html')">
             <h4>Klassen</h4>
@@ -367,7 +399,7 @@ main h3 {
             <p>(0)</p>
         </div>
 
-        <div class="stammdaten" onclick="redirect('Admin_Fächer_Ansicht.html')">
+        <div class="stammdaten" onclick="redirect('Admin_Faecher_Ansicht.html')">
             <h4>Fächer</h4>
             <p>(0)</p>
         </div>
