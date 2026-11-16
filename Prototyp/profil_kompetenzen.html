@@ -1,3 +1,4 @@
+<!-- Claude Sonnet 5.5 verwendet für Inhalte und JS-Logik -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -14,7 +15,7 @@
     <nav>
       <a href="Lehrer_ansicht.html">Wünsche</a>
       <a href="profil_kompetenzen.html">Profil / Kompetenzen</a>
-      <a href="#">Logout</a>
+      <a href="Anmeldung.html">Logout</a>
     </nav>
   </header>
 
@@ -26,7 +27,8 @@
       <div class="zeile">
         <div>
           <label for="ausmass">Stundenausmaß (Wochenstd.)</label>
-          <input id="ausmass" type="number" min="1" max="25" value="20">
+          <input id="ausmass" type="number" value="20" readonly>
+          <p class="hinweis klein">Wird von AV/Admin festgelegt.</p>
         </div>
         <div>
           <label><input type="checkbox"> Karenz / Teilzeit-Hinweis</label>
@@ -53,7 +55,7 @@
       </div>
 
       <div class="leiste rechts">
-        <!-- Prototyp: Save springt einfach zurück zur Übersicht -->
+        <a class="btn" href="Lehrer_ansicht.html">← Zurück</a>
         <button type="submit" class="btn">Save</button>
       </div>
     </form>

@@ -1,14 +1,4 @@
-
 @import url("farben.css");
-
-/* ==========================================
-   LWL – LEHRERWUNSCHLISTE
-   Gemeinsames Stylesheet für:
-   1. Lehrer-Ansicht
-   2. Profil / Kompetenzen
-   3. Wünsche bearbeiten
-   ========================================== */
-
 
 /* ==========================================
    1. GRUNDEINSTELLUNGEN
@@ -1063,5 +1053,125 @@ main:has(#klasse) .leiste > .btn:first-child {
     *::after {
         transition: none !important;
         scroll-behavior: auto !important;
+    }
+}
+
+/* ==========================================
+   13. ERGÄNZUNGEN
+   Am ENDE von lehrer.css einfügen
+   (nach dem Block "Reduzierte Animationen")
+   ========================================== */
+
+/* TEXT- UND PASSWORTFELDER – gleiches Aussehen wie die anderen Felder */
+
+main input[type="text"],
+main input[type="password"] {
+    width: 100%;
+    min-height: 44px;
+
+    padding: 11px 14px;
+
+    background: var(--farbe-oberflaeche);
+    color: var(--farbe-text);
+
+    border: 1px solid var(--farbe-rahmen);
+    border-radius: 9px;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    outline: none;
+}
+
+main input[type="text"]:hover,
+main input[type="password"]:hover {
+    border-color: var(--farbe-primaer);
+}
+
+main input[type="text"]:focus,
+main input[type="password"]:focus {
+    border-color: var(--farbe-primaer);
+    box-shadow: 0 0 0 3px var(--farbe-primaer-hell);
+}
+
+/* SCHREIBGESCHÜTZTE FELDER (Stundenausmaß, Std. des Fachs) */
+
+main input[readonly] {
+    background: var(--farbe-oberflaeche-sanft);
+    color: var(--farbe-text-sekundaer);
+    cursor: not-allowed;
+}
+
+main input[readonly]:hover {
+    border-color: var(--farbe-rahmen);
+}
+
+/* FELD ÜBER DIE GANZE BREITE DES RASTERS (Nachricht pro Wunsch) */
+
+.voll {
+    grid-column: 1 / -1;
+}
+
+#wunsch-nachricht {
+    min-height: 80px;
+}
+
+/* KLEINER HINWEIS UNTER EINEM FELD */
+
+.hinweis.klein {
+    margin: 8px 0 0;
+    font-size: 12px;
+}
+
+/* FEHLERMELDUNG BEIM HINZUFÜGEN */
+
+.fehler {
+    margin: 12px 0 0;
+    font-size: 13px;
+    font-weight: 650;
+    color: #b3261e;
+}
+
+/* NACHRICHTENFELD IN DER WUNSCH-TABELLE */
+
+main:has(#klasse) table input[type="text"] {
+    min-height: 42px;
+    padding: 9px 12px;
+    font-size: 13px;
+    border-radius: 8px;
+}
+
+/* LOGIN-SEITE */
+
+main.login-seite {
+    max-width: 520px;
+}
+
+.karte {
+    padding: 32px;
+
+    background: var(--farbe-oberflaeche);
+
+    border: 1px solid var(--farbe-rahmen);
+    border-radius: 15px;
+
+    box-shadow: 0 7px 24px var(--farbe-schatten);
+}
+
+.karte .feld {
+    margin-bottom: 22px;
+}
+
+@media (max-width: 600px) {
+
+    .karte {
+        padding: 22px 18px;
+        border-radius: 12px;
+    }
+
+    main:has(#klasse) table input[type="text"] {
+        min-height: 38px;
+        padding: 7px 5px;
+        font-size: 12px;
     }
 }

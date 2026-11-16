@@ -1,3 +1,4 @@
+<!-- Claude Sonnet 5.5 verwendet für Inhalte und JS-Logik -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -14,64 +15,76 @@
     <nav>
       <a href="Lehrer_ansicht.html">Wünsche</a>
       <a href="profil_kompetenzen.html">Profil / Kompetenzen</a>
-      <a href="#">Logout</a>
+      <a href="Anmeldung.html">Logout</a>
     </nav>
   </header>
 
   <main>
     <h1>Wünsche bearbeiten</h1>
 
-    <!-- Neuen Wunsch hinzufügen -->
     <div class="zeile">
       <div>
         <label for="klasse">Klasse</label>
         <select id="klasse">
-          <option value="">– Klasse wählen –</option>
+          <option value="" disabled selected>– Klasse wählen –</option>
           <option value="BI-5">5BI</option>
           <option value="AX-5">5AX</option>
           <option value="CN-4">4CN</option>
         </select>
       </div>
 
-      <!-- data-gruppe = Abteilung-Schulstufe, passend zur Klasse links -->
       <div>
         <label for="fach">Fach</label>
         <select id="fach">
-          <option value="">– zuerst Klasse wählen –</option>
-          <option data-gruppe="BI-5">MEDT</option>
-          <option data-gruppe="BI-5">SYT</option>
-          <option data-gruppe="AX-5">WebTech Übung</option>
-          <option data-gruppe="CN-4">AM</option>
-          <option data-gruppe="CN-4">NWT</option>
+          <option value="" disabled selected>– zuerst Klasse wählen –</option>
+          <option data-gruppe="BI-5" data-std="3">MEDT</option>
+          <option data-gruppe="BI-5" data-std="2">SYT</option>
+          <option data-gruppe="AX-5" data-std="2">WebTech Übung</option>
+          <option data-gruppe="CN-4" data-std="3">AM</option>
+          <option data-gruppe="CN-4" data-std="2">NWT</option>
         </select>
       </div>
 
       <div class="schmal">
         <label for="std">Std.</label>
-        <input id="std" type="number" min="1" max="20" value="2">
+        <input id="std" type="number" value="" placeholder="–" readonly>
+      </div>
+
+      <div class="voll">
+        <label for="wunsch-nachricht">Nachricht an Fachverantwortliche(n) zu diesem Wunsch (optional)</label>
+        <textarea id="wunsch-nachricht" rows="2"></textarea>
       </div>
     </div>
-    <p class="hinweis">Es werden nur Fächer angezeigt, die zu Abteilung und Schulstufe der Klasse passen.</p>
+    <p class="hinweis">Es werden nur Fächer angezeigt, die zu Abteilung und Schulstufe der Klasse passen. Die Stundenanzahl ist pro Fach fest vorgegeben.</p>
 
-    <button type="button" class="btn">+ Wunsch hinzufügen</button>
+    <button type="button" class="btn" id="add-wunsch">+ Wunsch hinzufügen</button>
+    <p class="fehler" id="fehler" hidden></p>
 
-    <!-- Bestehende Wünsche: Stunden direkt in der Tabelle änderbar, ✕ entfernt den Wunsch -->
     <h2 style="font-size:1.1em; margin-top:24px;">Meine Wünsche</h2>
     <table>
       <thead>
-        <tr><th>Klasse</th><th>Fach</th><th>Std.</th><th></th></tr>
+        <tr><th>Klasse</th><th>Fach</th><th>Std.</th><th>Nachricht</th><th></th></tr>
       </thead>
-      <tbody>
-        <tr><td>5BI</td><td>MEDT</td><td><input type="number" min="1" max="20" value="3"></td><td><button type="button" class="btn">✕</button></td></tr>
-        <tr><td>5AX</td><td>WebTech Übung</td><td><input type="number" min="1" max="20" value="2"></td><td><button type="button" class="btn">✕</button></td></tr>
-        <tr><td>4CN</td><td>AM</td><td><input type="number" min="1" max="20" value="3"></td><td><button type="button" class="btn">✕</button></td></tr>
+      <tbody id="wuensche-tbody">
+        <tr>
+          <td>5BI</td><td>MEDT</td><td>3</td>
+          <td><input type="text" class="nachricht-feld" aria-label="Nachricht zu 5BI MEDT"></td>
+          <td><button type="button" class="btn loeschen" aria-label="Wunsch entfernen">✕</button></td>
+        </tr>
+        <tr>
+          <td>5AX</td><td>WebTech Übung</td><td>2</td>
+          <td><input type="text" class="nachricht-feld" aria-label="Nachricht zu 5AX WebTech Übung"></td>
+          <td><button type="button" class="btn loeschen" aria-label="Wunsch entfernen">✕</button></td>
+        </tr>
+        <tr>
+          <td>4CN</td><td>AM</td><td>3</td>
+          <td><input type="text" class="nachricht-feld" aria-label="Nachricht zu 4CN AM"></td>
+          <td><button type="button" class="btn loeschen" aria-label="Wunsch entfernen">✕</button></td>
+        </tr>
       </tbody>
     </table>
 
-    <label for="nachricht">Nachricht an Fachverantwortliche(n) (optional)</label>
-    <textarea id="nachricht" rows="3"></textarea>
-
-    <p>Stundenausmaß 20 | Eingetragen 8 | Rest 12</p>
+    <p id="zusammenfassung">Stundenausmaß 20 | Eingetragen 8 | Rest 12</p>
 
     <div class="leiste">
       <a class="btn" href="Lehrer_ansicht.html">Abbrechen</a>
@@ -80,22 +93,113 @@
   </main>
 
   <script>
-    // Einziges JavaScript: Wenn eine Klasse gewählt wird, zeigen wir nur die Fächer,
-    // deren data-gruppe (Abteilung-Schulstufe) zur Klasse passt.
+    const AUSMASS = 20;
+
     const klasse = document.getElementById("klasse");
     const fach = document.getElementById("fach");
+    const std = document.getElementById("std");
+    const wunschNachricht = document.getElementById("wunsch-nachricht");
+    const addButton = document.getElementById("add-wunsch");
+    const tbody = document.getElementById("wuensche-tbody");
+    const zusammenfassung = document.getElementById("zusammenfassung");
+    const fehler = document.getElementById("fehler");
 
-    klasse.addEventListener("change", function () {
-      fach.value = ""; // bisherige Auswahl zurücksetzen
+    function fachListeAktualisieren() {
+      fach.selectedIndex = 0;
+      std.value = "";
 
       for (const option of fach.options) {
         if (!option.dataset.gruppe) {
-          // Platzhalter-Option: Text je nach Zustand anpassen
+
           option.textContent = klasse.value ? "– Fach wählen –" : "– zuerst Klasse wählen –";
           continue;
         }
-        option.hidden = option.dataset.gruppe !== klasse.value;
+        const passt = option.dataset.gruppe === klasse.value;
+        option.hidden = !passt;
+        option.disabled = !passt;
       }
+    }
+
+    klasse.addEventListener("change", fachListeAktualisieren);
+
+    fach.addEventListener("change", function () {
+      std.value = fach.selectedOptions[0].dataset.std;
+    });
+
+    function zusammenfassungAktualisieren() {
+      let summe = 0;
+      for (const zeile of tbody.rows) {
+        summe += Number(zeile.cells[2].textContent);
+      }
+      zusammenfassung.textContent =
+        "Stundenausmaß " + AUSMASS + " | Eingetragen " + summe + " | Rest " + (AUSMASS - summe);
+    }
+
+    function fehlerZeigen(text) {
+      fehler.textContent = text;
+      fehler.hidden = false;
+    }
+
+    function zelle(text) {
+      const td = document.createElement("td");
+      td.textContent = text;
+      return td;
+    }
+
+    addButton.addEventListener("click", function () {
+      fehler.hidden = true;
+
+      if (!klasse.value || !fach.value) {
+        fehlerZeigen("Bitte zuerst Klasse und Fach auswählen.");
+        return;
+      }
+
+      const klasseName = klasse.selectedOptions[0].textContent;
+
+      for (const zeile of tbody.rows) {
+        if (zeile.cells[0].textContent === klasseName && zeile.cells[1].textContent === fach.value) {
+          fehlerZeigen("Diesen Wunsch gibt es bereits.");
+          return;
+        }
+      }
+
+      const tr = document.createElement("tr");
+      tr.appendChild(zelle(klasseName));
+      tr.appendChild(zelle(fach.value));
+      tr.appendChild(zelle(std.value));
+
+      const nachrichtZelle = document.createElement("td");
+      const nachrichtFeld = document.createElement("input");
+      nachrichtFeld.type = "text";
+      nachrichtFeld.className = "nachricht-feld";
+      nachrichtFeld.value = wunschNachricht.value;
+      nachrichtFeld.setAttribute("aria-label", "Nachricht zu " + klasseName + " " + fach.value);
+      nachrichtZelle.appendChild(nachrichtFeld);
+      tr.appendChild(nachrichtZelle);
+
+      const loeschZelle = document.createElement("td");
+      const loeschButton = document.createElement("button");
+      loeschButton.type = "button";
+      loeschButton.className = "btn loeschen";
+      loeschButton.setAttribute("aria-label", "Wunsch entfernen");
+      loeschButton.textContent = "✕";
+      loeschZelle.appendChild(loeschButton);
+      tr.appendChild(loeschZelle);
+
+      tbody.appendChild(tr);
+
+      klasse.selectedIndex = 0;
+      fachListeAktualisieren();
+      wunschNachricht.value = "";
+
+      zusammenfassungAktualisieren();
+    });
+
+    tbody.addEventListener("click", function (event) {
+      const button = event.target.closest(".loeschen");
+      if (!button) return;
+      button.closest("tr").remove();
+      zusammenfassungAktualisieren();
     });
   </script>
 </body>
