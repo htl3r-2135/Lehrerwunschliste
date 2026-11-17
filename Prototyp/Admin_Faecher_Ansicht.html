@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <title>Lehrer erstellen</title>
+    <title>Fach erstellen</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>
@@ -57,7 +57,7 @@
             : "Admin_Ansicht.html";
 
         function logout() {
-            window.location.href = "./Anmeldung.html";
+            window.location.href = "Anmeldung.html";
         }
 
         /* Geführte Stammdatenerstellung (?gefuehrt=1): nur dann werden
@@ -107,7 +107,7 @@
     </script>
     <style>
 
-@import url("farben.css");
+@import url("Prototyp/farben.css");
 
 /* ==========================================
    LWL – ADMIN STAMMDATEN
@@ -812,39 +812,6 @@ main > h3 {
     }
 }
 
-/* FACHVERANTWORTLICHE(R) */
-
-.schalter {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-
-    margin-bottom: 18px;
-
-    cursor: pointer;
-}
-
-.schalter input {
-    width: 18px;
-    height: 18px;
-    margin: 0;
-
-    accent-color: var(--farbe-primaer-dunkel);
-    cursor: pointer;
-}
-
-#fach-auswahl[hidden] {
-    display: none;
-}
-
-#fach-auswahl .tags {
-    margin-bottom: 8px;
-}
-
-#fach-auswahl .hinweis {
-    margin-bottom: 24px;
-}
-
 /* GEFÜHRTE STAMMDATENERSTELLUNG */
 
 body:not(.gefuehrt) .nur-gefuehrt {
@@ -856,7 +823,7 @@ body:not(.gefuehrt) .nur-gefuehrt {
 <body>
 <script>if (GEFUEHRT) document.body.classList.add("gefuehrt");</script>
 <header>
-    <h2>Lehrer | Schuljahr 2026/27</h2>
+    <h2>Fächer | Schuljahr 2026/27</h2>
     <button onclick="logout()">Logout</button>
 </header>
 <main>
@@ -865,54 +832,56 @@ body:not(.gefuehrt) .nur-gefuehrt {
     <div id="meldung" role="status"></div>
 
     <div class="karte">
-        <h3>Lehrer erstellen <span class="nur-gefuehrt">Schritt 4 von 4</span></h3>
+        <h3><span id="formular-titel">Fach erstellen</span> <span class="nur-gefuehrt">Schritt 3 von 4</span></h3>
         <form class="inhalt" id="formular" novalidate>
             <div class="zeile">
-                <div class="feld schmal">
-                    <label for="kuerzel">Kürzel</label>
-                    <input type="text" id="kuerzel" maxlength="3" autocomplete="off">
-                </div>
                 <div class="feld">
                     <label for="name">Name</label>
-                    <input type="text" id="name" autocomplete="off">
-                </div>
-            </div>
-
-            <div class="zeile">
-                <div class="feld">
-                    <label for="email">E-Mail</label>
-                    <input type="email" id="email" autocomplete="off">
+                    <input type="text" id="name" placeholder="z. B. MEDT" autocomplete="off">
                 </div>
                 <div class="feld schmal">
-                    <label for="stunden">Wochenstd.</label>
-                    <input type="number" id="stunden" min="1" max="30">
+                    <label for="art">Art</label>
+                    <select id="art">
+                        <option>Theorie</option>
+                        <option>Labor</option>
+                        <option selected>Theorie/Labor</option>
+                    </select>
                 </div>
             </div>
 
-            <label class="schalter">
-                <input type="checkbox" id="verantwortlich">
-                Fachverantwortliche(r)
-            </label>
+            <span class="beschriftung" id="label-abteilungen">Abteilungen</span>
+            <div class="tags" id="abteilungen" role="group" aria-labelledby="label-abteilungen"></div>
 
-            <div id="fach-auswahl" hidden>
-                <span class="beschriftung">Fachverantwortlich für</span>
-                <div class="tags" id="faecher-tags"></div>
-                <p class="hinweis" id="faecher-hinweis">Mindestens ein Fach auswählen.</p>
+            <span class="beschriftung" id="label-stufen">Schulstufen</span>
+            <div class="tags" id="stufen" role="group" aria-labelledby="label-stufen"></div>
+
+            <div class="zeile">
+                <div class="feld schmal">
+                    <label for="wochenstd">Wochenstd.</label>
+                    <input type="number" id="wochenstd" min="1" max="20" placeholder="z. B. 3">
+                </div>
+                <div class="feld">
+                    <label for="teiler">Gruppenteiler (Anz. Schüler/Lehrer) – optional</label>
+                    <input type="number" id="teiler" min="1" max="40" placeholder="z. B. 6">
+                </div>
             </div>
 
-            <div class="leiste verteilt">
-                <p class="hinweis">→ Lehrer erhält E-Mail mit OTP zur Anmeldung</p>
-                <button class="primaer" type="submit">Speichern</button>
+            <div class="leiste">
+                <button type="button" id="abbrechen" hidden>Abbrechen</button>
+                <button class="primaer" type="submit" id="speichern">Speichern</button>
             </div>
         </form>
     </div>
 
     <div class="karte">
-        <h3>Angelegte Lehrer <span id="anzahl"></span></h3>
+        <h3>Angelegte Fächer <span id="anzahl"></span></h3>
         <div class="tabelle">
             <table>
                 <thead>
-                    <tr><th>Kürzel</th><th>Name</th><th>E-Mail</th><th>Std.</th><th>Fachverantwortlich für</th><th>Löschen</th></tr>
+                    <tr>
+                        <th>Name</th><th>Art</th><th>Abteilungen</th><th>Schulstufen</th>
+                        <th>Wochenstd.</th><th>Gruppenteiler</th><th>Bearbeiten</th><th>Löschen</th>
+                    </tr>
                 </thead>
                 <tbody id="liste"></tbody>
             </table>
@@ -920,93 +889,116 @@ body:not(.gefuehrt) .nur-gefuehrt {
     </div>
 
     <div class="leiste verteilt nur-gefuehrt">
-        <button onclick="redirect('Admin_Faecher_Ansicht.html')">Zurück</button>
-        <button class="primaer" onclick="zurUebersicht('Stammdaten')">Fertig</button>
+        <button onclick="redirect('Admin_Klassen_Ansicht.html')">Zurück</button>
+        <button class="primaer" onclick="redirect('Admin_Lehrer_Ansicht.html')">Weiter</button>
     </div>
 </main>
 <script>
-    const EMAIL_ENDUNG = "@htl.rennweg.at";
-    let emailSelbstGeaendert = false;
+    function tag(gruppe, wert) {
+        return '<label><input type="checkbox" name="' + gruppe + '" value="' + esc(wert) + '">' +
+            esc(wert) + '</label>';
+    }
+
+    function ausgewaehlt(gruppe) {
+        return Array.from(document.querySelectorAll('input[name="' + gruppe + '"]:checked'), c => c.value);
+    }
+
+    /* Index des Fachs, das gerade bearbeitet wird (null = neues Fach anlegen) */
+    let bearbeitenIndex = null;
+
+    function bearbeitenButton(index, name) {
+        return '<td class="loeschen"><button type="button" data-bearbeiten="' + index +
+            '" aria-label="' + esc(name) + ' bearbeiten">✎</button></td>';
+    }
 
     function anzeigen() {
         const daten = laden();
-        el("anzahl").textContent = "(" + daten.lehrer.length + ")";
-        el("liste").innerHTML = daten.lehrer.length
-            ? daten.lehrer.map((l, i) =>
-                "<tr><td>" + esc(l.kuerzel) + "</td><td>" + esc(l.name) + "</td><td>" +
-                esc(l.email) + "</td><td>" + (l.stunden || "–") + "</td><td>" +
-                (l.verantwortlichFuer && l.verantwortlichFuer.length ? esc(l.verantwortlichFuer.join(", ")) : "–") +
-                "</td>" + loeschButton(i, l.kuerzel) + "</tr>").join("")
-            : leereZeile(6, "Noch keine Lehrer angelegt");
+        el("anzahl").textContent = "(" + daten.faecher.length + ")";
+        el("liste").innerHTML = daten.faecher.length
+            ? daten.faecher.map((f, i) =>
+                "<tr><td>" + esc(f.name) + "</td><td>" + esc(f.art) + "</td><td>" +
+                esc(f.abteilungen.join(", ")) + "</td><td>" + f.stufen.join(", ") + "</td><td>" +
+                f.wochenstd + "</td><td>" + (f.teiler || "–") + "</td>" +
+                bearbeitenButton(i, f.name) + loeschButton(i, f.name) + "</tr>").join("")
+            : leereZeile(8, "Noch keine Fächer angelegt");
     }
 
-    /* Fächer aus den Stammdaten als Auswahl anzeigen */
-    function faecherAnzeigen() {
-        const faecher = laden().faecher;
-        el("faecher-tags").innerHTML = faecher.map(f =>
-            '<label><input type="checkbox" name="fach" value="' + esc(f.name) + '"> ' + esc(f.name) + '</label>'
-        ).join("");
-        el("faecher-hinweis").innerHTML = faecher.length
-            ? "Mindestens ein Fach auswählen."
-            : 'Noch keine Fächer angelegt – zuerst unter <a href="#" onclick="redirect(\'Admin_Faecher_Ansicht.html\'); return false;">Fächer</a> anlegen.';
+    function bearbeitenBeenden() {
+        bearbeitenIndex = null;
+        el("formular").reset();
+        el("formular-titel").textContent = "Fach erstellen";
+        el("speichern").textContent = "Speichern";
+        el("abbrechen").hidden = true;
     }
 
-    function verantwortlichUmschalten() {
-        el("fach-auswahl").hidden = !el("verantwortlich").checked;
+    function bearbeitenStarten(index) {
+        const fach = laden().faecher[index];
+        if (!fach) return;
+        bearbeitenIndex = index;
+
+        el("name").value = fach.name;
+        el("art").value = fach.art;
+        document.querySelectorAll('input[name="abteilung"]').forEach(c => {
+            c.checked = fach.abteilungen.includes(c.value);
+        });
+        document.querySelectorAll('input[name="stufe"]').forEach(c => {
+            c.checked = fach.stufen.includes(Number(c.value));
+        });
+        el("wochenstd").value = fach.wochenstd;
+        el("teiler").value = fach.teiler || "";
+
+        el("formular-titel").textContent = "Fach „" + fach.name + "“ bearbeiten";
+        el("speichern").textContent = "Änderungen speichern";
+        el("abbrechen").hidden = false;
+        el("formular").scrollIntoView({ behavior: "smooth", block: "center" });
+        el("name").focus();
     }
 
-    el("verantwortlich").addEventListener("change", verantwortlichUmschalten);
-
-    /* E-Mail aus dem Kürzel vorschlagen (MUS -> mus@htl.rennweg.at) */
-    el("kuerzel").addEventListener("input", () => {
-        el("kuerzel").value = el("kuerzel").value.toUpperCase();
-        if (!emailSelbstGeaendert) {
-            const kuerzel = el("kuerzel").value.trim().toLowerCase();
-            el("email").value = kuerzel ? kuerzel + EMAIL_ENDUNG : "";
-        }
+    el("abbrechen").addEventListener("click", () => {
+        bearbeitenBeenden();
+        meldung("Bearbeiten abgebrochen.");
     });
 
-    el("email").addEventListener("input", () => {
-        emailSelbstGeaendert = el("email").value !== "";
-    });
+    const abteilungen = laden().abteilungen;
+    el("abteilungen").innerHTML = abteilungen.length
+        ? abteilungen.map(a => tag("abteilung", a)).join("")
+        : '<p class="hinweis">Noch keine Abteilungen vorhanden – bitte zuerst ' +
+          '<a href="javascript:redirect(\'Admin_Abteilungen_Ansicht.html\')">Abteilungen anlegen</a>.</p>';
+    el("stufen").innerHTML = [1, 2, 3, 4, 5].map(s => tag("stufe", s)).join("");
 
     el("formular").addEventListener("submit", e => {
         e.preventDefault();
         const daten = laden();
-        const kuerzel = el("kuerzel").value.trim().toUpperCase();
         const name = el("name").value.trim();
-        const email = el("email").value.trim().toLowerCase();
-        const stunden = parseInt(el("stunden").value, 10);
+        const gewaehlteAbteilungen = ausgewaehlt("abteilung");
+        const stufen = ausgewaehlt("stufe").map(Number);
+        const wochenstd = parseInt(el("wochenstd").value, 10);
+        const teiler = parseInt(el("teiler").value, 10);
 
-        if (!/^[A-ZÄÖÜ]{3}$/.test(kuerzel))
-            return meldung("Bitte ein Kürzel mit genau 3 Buchstaben eingeben.", true);
-        if (!name) return meldung("Bitte einen Namen eingeben.", true);
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-            return meldung("Bitte eine gültige E-Mail-Adresse eingeben.", true);
-        if (daten.lehrer.some(l => gleich(l.kuerzel, kuerzel)))
-            return meldung("Das Kürzel „" + kuerzel + "“ ist bereits vergeben.", true);
-        if (daten.lehrer.some(l => gleich(l.email, email)))
-            return meldung("Die E-Mail-Adresse „" + email + "“ ist bereits vergeben.", true);
-        if (!(stunden > 0))
-            return meldung("Bitte die Stundenanzahl angeben.", true);
+        if (!name) return meldung("Bitte einen Fachnamen eingeben.", true);
+        if (!gewaehlteAbteilungen.length) return meldung("Bitte mindestens eine Abteilung auswählen.", true);
+        if (!stufen.length) return meldung("Bitte mindestens eine Schulstufe auswählen.", true);
+        if (!(wochenstd > 0)) return meldung("Bitte die Wochenstunden angeben.", true);
+        if (daten.faecher.some((f, i) => i !== bearbeitenIndex && gleich(f.name, name)))
+            return meldung("Das Fach „" + name + "“ gibt es bereits.", true);
 
-        const verantwortlich = el("verantwortlich").checked;
-        const verantwortlichFuer = verantwortlich
-            ? [...document.querySelectorAll("#faecher-tags input:checked")].map(c => c.value)
-            : [];
-        if (verantwortlich && !verantwortlichFuer.length)
-            return meldung("Bitte mindestens ein Fach auswählen, für das der Lehrer fachverantwortlich ist.", true);
+        const fach = {
+            name: name,
+            art: el("art").value,
+            abteilungen: gewaehlteAbteilungen,
+            stufen: stufen,
+            wochenstd: wochenstd,
+            teiler: teiler > 0 ? teiler : null
+        };
 
-
-        daten.lehrer.push({ kuerzel: kuerzel, name: name, email: email, stunden: stunden,
-            verantwortlichFuer: verantwortlichFuer });
+        const warBearbeiten = bearbeitenIndex !== null;
+        if (warBearbeiten) daten.faecher[bearbeitenIndex] = fach;
+        else daten.faecher.push(fach);
         speichern(daten);
 
-        el("formular").reset();
-        emailSelbstGeaendert = false;
-        verantwortlichUmschalten();
-        el("kuerzel").focus();
-        meldung("Lehrer „" + kuerzel + "“ gespeichert – OTP-E-Mail an " + email + " gesendet (im Prototyp nur simuliert).");
+        bearbeitenBeenden();
+        el("name").focus();
+        meldung("Fach „" + name + "“ " + (warBearbeiten ? "geändert." : "gespeichert."));
         anzeigen();
     });
 
@@ -1014,15 +1006,23 @@ body:not(.gefuehrt) .nur-gefuehrt {
         const button = e.target.closest("button");
         if (!button) return;
 
+        if (button.dataset.bearbeiten !== undefined) {
+            bearbeitenStarten(Number(button.dataset.bearbeiten));
+            return;
+        }
+
+        const index = Number(button.dataset.index);
         const daten = laden();
-        const lehrer = daten.lehrer.splice(Number(button.dataset.index), 1)[0];
+        const fach = daten.faecher.splice(index, 1)[0];
         speichern(daten);
 
-        meldung("Lehrer „" + lehrer.kuerzel + "“ gelöscht.");
+        if (bearbeitenIndex === index) bearbeitenBeenden();
+        else if (bearbeitenIndex !== null && bearbeitenIndex > index) bearbeitenIndex--;
+
+        meldung("Fach „" + fach.name + "“ gelöscht.");
         anzeigen();
     });
 
-    faecherAnzeigen();
     anzeigen();
 </script>
 </body>

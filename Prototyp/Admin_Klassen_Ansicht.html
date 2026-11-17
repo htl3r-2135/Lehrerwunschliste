@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <title>Fach erstellen</title>
+    <title>Klasse erstellen</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>
@@ -57,7 +57,7 @@
             : "Admin_Ansicht.html";
 
         function logout() {
-            window.location.href = "./Anmeldung.html";
+            window.location.href = "Anmeldung.html";
         }
 
         /* Geführte Stammdatenerstellung (?gefuehrt=1): nur dann werden
@@ -107,7 +107,7 @@
     </script>
     <style>
 
-@import url("farben.css");
+@import url("Prototyp/farben.css");
 
 /* ==========================================
    LWL – ADMIN STAMMDATEN
@@ -823,7 +823,7 @@ body:not(.gefuehrt) .nur-gefuehrt {
 <body>
 <script>if (GEFUEHRT) document.body.classList.add("gefuehrt");</script>
 <header>
-    <h2>Fächer | Schuljahr 2026/27</h2>
+    <h2>Klassen | Schuljahr 2026/27</h2>
     <button onclick="logout()">Logout</button>
 </header>
 <main>
@@ -832,56 +832,53 @@ body:not(.gefuehrt) .nur-gefuehrt {
     <div id="meldung" role="status"></div>
 
     <div class="karte">
-        <h3><span id="formular-titel">Fach erstellen</span> <span class="nur-gefuehrt">Schritt 3 von 4</span></h3>
+        <h3>Klasse erstellen <span class="nur-gefuehrt">Schritt 2 von 4</span></h3>
         <form class="inhalt" id="formular" novalidate>
             <div class="zeile">
                 <div class="feld">
                     <label for="name">Name</label>
-                    <input type="text" id="name" placeholder="z. B. MEDT" autocomplete="off">
-                </div>
-                <div class="feld schmal">
-                    <label for="art">Art</label>
-                    <select id="art">
-                        <option>Theorie</option>
-                        <option>Labor</option>
-                        <option selected>Theorie/Labor</option>
-                    </select>
-                </div>
-            </div>
-
-            <span class="beschriftung" id="label-abteilungen">Abteilungen</span>
-            <div class="tags" id="abteilungen" role="group" aria-labelledby="label-abteilungen"></div>
-
-            <span class="beschriftung" id="label-stufen">Schulstufen</span>
-            <div class="tags" id="stufen" role="group" aria-labelledby="label-stufen"></div>
-
-            <div class="zeile">
-                <div class="feld schmal">
-                    <label for="wochenstd">Wochenstd.</label>
-                    <input type="number" id="wochenstd" min="1" max="20" placeholder="z. B. 3">
+                    <input type="text" id="name" placeholder="z. B. 5BI" autocomplete="off">
                 </div>
                 <div class="feld">
-                    <label for="teiler">Gruppenteiler (Anz. Schüler/Lehrer) – optional</label>
-                    <input type="number" id="teiler" min="1" max="40" placeholder="z. B. 6">
+                    <label for="abteilung">Abteilung</label>
+                    <select id="abteilung"></select>
                 </div>
             </div>
 
+            <div class="zeile">
+                <div class="feld">
+                    <label for="stufe">Schulstufe</label>
+                    <select id="stufe">
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                    </select>
+                </div>
+                <div class="feld">
+                    <label for="schueler">Schülerzahl (Prognose)</label>
+                    <input type="number" id="schueler" min="1" max="40" placeholder="z. B. 24">
+                </div>
+            </div>
+
+            <p class="hinweis" id="keine-abteilung" hidden>
+                Noch keine Abteilungen vorhanden – bitte zuerst
+                <a href="javascript:redirect('Admin_Abteilungen_Ansicht.html')">Abteilungen anlegen</a>.
+            </p>
+
             <div class="leiste">
-                <button type="button" id="abbrechen" hidden>Abbrechen</button>
-                <button class="primaer" type="submit" id="speichern">Speichern</button>
+                <button class="primaer" type="submit">Speichern</button>
             </div>
         </form>
     </div>
 
     <div class="karte">
-        <h3>Angelegte Fächer <span id="anzahl"></span></h3>
+        <h3>Angelegte Klassen <span id="anzahl"></span></h3>
         <div class="tabelle">
             <table>
                 <thead>
-                    <tr>
-                        <th>Name</th><th>Art</th><th>Abteilungen</th><th>Schulstufen</th>
-                        <th>Wochenstd.</th><th>Gruppenteiler</th><th>Bearbeiten</th><th>Löschen</th>
-                    </tr>
+                    <tr><th>Name</th><th>Abteilung</th><th>Schulstufe</th><th>Schülerzahl</th><th>Löschen</th></tr>
                 </thead>
                 <tbody id="liste"></tbody>
             </table>
@@ -889,116 +886,56 @@ body:not(.gefuehrt) .nur-gefuehrt {
     </div>
 
     <div class="leiste verteilt nur-gefuehrt">
-        <button onclick="redirect('Admin_Klassen_Ansicht.html')">Zurück</button>
-        <button class="primaer" onclick="redirect('Admin_Lehrer_Ansicht.html')">Weiter</button>
+        <button onclick="redirect('Admin_Abteilungen_Ansicht.html')">Zurück</button>
+        <button class="primaer" onclick="redirect('Admin_Faecher_Ansicht.html')">Weiter</button>
     </div>
 </main>
 <script>
-    function tag(gruppe, wert) {
-        return '<label><input type="checkbox" name="' + gruppe + '" value="' + esc(wert) + '">' +
-            esc(wert) + '</label>';
-    }
-
-    function ausgewaehlt(gruppe) {
-        return Array.from(document.querySelectorAll('input[name="' + gruppe + '"]:checked'), c => c.value);
-    }
-
-    /* Index des Fachs, das gerade bearbeitet wird (null = neues Fach anlegen) */
-    let bearbeitenIndex = null;
-
-    function bearbeitenButton(index, name) {
-        return '<td class="loeschen"><button type="button" data-bearbeiten="' + index +
-            '" aria-label="' + esc(name) + ' bearbeiten">✎</button></td>';
-    }
-
     function anzeigen() {
         const daten = laden();
-        el("anzahl").textContent = "(" + daten.faecher.length + ")";
-        el("liste").innerHTML = daten.faecher.length
-            ? daten.faecher.map((f, i) =>
-                "<tr><td>" + esc(f.name) + "</td><td>" + esc(f.art) + "</td><td>" +
-                esc(f.abteilungen.join(", ")) + "</td><td>" + f.stufen.join(", ") + "</td><td>" +
-                f.wochenstd + "</td><td>" + (f.teiler || "–") + "</td>" +
-                bearbeitenButton(i, f.name) + loeschButton(i, f.name) + "</tr>").join("")
-            : leereZeile(8, "Noch keine Fächer angelegt");
+        el("anzahl").textContent = "(" + daten.klassen.length + ")";
+        el("liste").innerHTML = daten.klassen.length
+            ? daten.klassen.map((k, i) =>
+                "<tr><td>" + esc(k.name) + "</td><td>" + esc(k.abteilung) + "</td><td>" +
+                k.stufe + "</td><td>" + k.schueler + "</td>" + loeschButton(i, k.name) + "</tr>").join("")
+            : leereZeile(5, "Noch keine Klassen angelegt");
     }
-
-    function bearbeitenBeenden() {
-        bearbeitenIndex = null;
-        el("formular").reset();
-        el("formular-titel").textContent = "Fach erstellen";
-        el("speichern").textContent = "Speichern";
-        el("abbrechen").hidden = true;
-    }
-
-    function bearbeitenStarten(index) {
-        const fach = laden().faecher[index];
-        if (!fach) return;
-        bearbeitenIndex = index;
-
-        el("name").value = fach.name;
-        el("art").value = fach.art;
-        document.querySelectorAll('input[name="abteilung"]').forEach(c => {
-            c.checked = fach.abteilungen.includes(c.value);
-        });
-        document.querySelectorAll('input[name="stufe"]').forEach(c => {
-            c.checked = fach.stufen.includes(Number(c.value));
-        });
-        el("wochenstd").value = fach.wochenstd;
-        el("teiler").value = fach.teiler || "";
-
-        el("formular-titel").textContent = "Fach „" + fach.name + "“ bearbeiten";
-        el("speichern").textContent = "Änderungen speichern";
-        el("abbrechen").hidden = false;
-        el("formular").scrollIntoView({ behavior: "smooth", block: "center" });
-        el("name").focus();
-    }
-
-    el("abbrechen").addEventListener("click", () => {
-        bearbeitenBeenden();
-        meldung("Bearbeiten abgebrochen.");
-    });
 
     const abteilungen = laden().abteilungen;
-    el("abteilungen").innerHTML = abteilungen.length
-        ? abteilungen.map(a => tag("abteilung", a)).join("")
-        : '<p class="hinweis">Noch keine Abteilungen vorhanden – bitte zuerst ' +
-          '<a href="javascript:redirect(\'Admin_Abteilungen_Ansicht.html\')">Abteilungen anlegen</a>.</p>';
-    el("stufen").innerHTML = [1, 2, 3, 4, 5].map(s => tag("stufe", s)).join("");
+    el("abteilung").innerHTML = abteilungen.map(a => "<option>" + esc(a) + "</option>").join("");
+    el("keine-abteilung").hidden = abteilungen.length > 0;
+
+    /* Schulstufe aus dem Klassennamen vorschlagen (5BI -> 5) */
+    el("name").addEventListener("input", () => {
+        const ziffer = el("name").value.trim().charAt(0);
+        if (ziffer >= "1" && ziffer <= "5") el("stufe").value = ziffer;
+    });
 
     el("formular").addEventListener("submit", e => {
         e.preventDefault();
         const daten = laden();
-        const name = el("name").value.trim();
-        const gewaehlteAbteilungen = ausgewaehlt("abteilung");
-        const stufen = ausgewaehlt("stufe").map(Number);
-        const wochenstd = parseInt(el("wochenstd").value, 10);
-        const teiler = parseInt(el("teiler").value, 10);
+        const name = el("name").value.trim().toUpperCase();
+        const abteilung = el("abteilung").value;
+        const schueler = parseInt(el("schueler").value, 10);
 
-        if (!name) return meldung("Bitte einen Fachnamen eingeben.", true);
-        if (!gewaehlteAbteilungen.length) return meldung("Bitte mindestens eine Abteilung auswählen.", true);
-        if (!stufen.length) return meldung("Bitte mindestens eine Schulstufe auswählen.", true);
-        if (!(wochenstd > 0)) return meldung("Bitte die Wochenstunden angeben.", true);
-        if (daten.faecher.some((f, i) => i !== bearbeitenIndex && gleich(f.name, name)))
-            return meldung("Das Fach „" + name + "“ gibt es bereits.", true);
+        if (!name) return meldung("Bitte einen Klassennamen eingeben.", true);
+        if (!abteilung) return meldung("Bitte zuerst eine Abteilung anlegen.", true);
+        if (!(schueler > 0)) return meldung("Bitte die prognostizierte Schülerzahl angeben.", true);
+        if (daten.klassen.some(k => gleich(k.name, name)))
+            return meldung("Die Klasse „" + name + "“ gibt es bereits.", true);
 
-        const fach = {
+        daten.klassen.push({
             name: name,
-            art: el("art").value,
-            abteilungen: gewaehlteAbteilungen,
-            stufen: stufen,
-            wochenstd: wochenstd,
-            teiler: teiler > 0 ? teiler : null
-        };
-
-        const warBearbeiten = bearbeitenIndex !== null;
-        if (warBearbeiten) daten.faecher[bearbeitenIndex] = fach;
-        else daten.faecher.push(fach);
+            abteilung: abteilung,
+            stufe: Number(el("stufe").value),
+            schueler: schueler
+        });
         speichern(daten);
 
-        bearbeitenBeenden();
+        el("name").value = "";
+        el("schueler").value = "";
         el("name").focus();
-        meldung("Fach „" + name + "“ " + (warBearbeiten ? "geändert." : "gespeichert."));
+        meldung("Klasse „" + name + "“ gespeichert.");
         anzeigen();
     });
 
@@ -1006,20 +943,11 @@ body:not(.gefuehrt) .nur-gefuehrt {
         const button = e.target.closest("button");
         if (!button) return;
 
-        if (button.dataset.bearbeiten !== undefined) {
-            bearbeitenStarten(Number(button.dataset.bearbeiten));
-            return;
-        }
-
-        const index = Number(button.dataset.index);
         const daten = laden();
-        const fach = daten.faecher.splice(index, 1)[0];
+        const klasse = daten.klassen.splice(Number(button.dataset.index), 1)[0];
         speichern(daten);
 
-        if (bearbeitenIndex === index) bearbeitenBeenden();
-        else if (bearbeitenIndex !== null && bearbeitenIndex > index) bearbeitenIndex--;
-
-        meldung("Fach „" + fach.name + "“ gelöscht.");
+        meldung("Klasse „" + klasse.name + "“ gelöscht.");
         anzeigen();
     });
 
