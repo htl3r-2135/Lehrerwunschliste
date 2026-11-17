@@ -812,6 +812,39 @@ main > h3 {
     }
 }
 
+/* FACHVERANTWORTLICHE(R) */
+
+.schalter {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+
+    margin-bottom: 18px;
+
+    cursor: pointer;
+}
+
+.schalter input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+
+    accent-color: var(--farbe-primaer-dunkel);
+    cursor: pointer;
+}
+
+#fach-auswahl[hidden] {
+    display: none;
+}
+
+#fach-auswahl .tags {
+    margin-bottom: 8px;
+}
+
+#fach-auswahl .hinweis {
+    margin-bottom: 24px;
+}
+
 /* GEFÜHRTE STAMMDATENERSTELLUNG */
 
 body:not(.gefuehrt) .nur-gefuehrt {
@@ -855,6 +888,18 @@ body:not(.gefuehrt) .nur-gefuehrt {
                     <input type="number" id="stunden" min="1" max="30" placeholder="z. B. 22">
                 </div>
             </div>
+
+            <label class="schalter">
+                <input type="checkbox" id="verantwortlich">
+                Fachverantwortliche(r)
+            </label>
+
+            <div id="fach-auswahl" hidden>
+                <span class="beschriftung">Fachverantwortlich für</span>
+                <div class="tags" id="faecher-tags"></div>
+                <p class="hinweis" id="faecher-hinweis">Mindestens ein Fach auswählen.</p>
+            </div>
+
             <div class="leiste verteilt">
                 <p class="hinweis">→ Lehrer erhält E-Mail mit OTP zur Anmeldung</p>
                 <button class="primaer" type="submit">Speichern</button>
@@ -867,7 +912,7 @@ body:not(.gefuehrt) .nur-gefuehrt {
         <div class="tabelle">
             <table>
                 <thead>
-                    <tr><th>Kürzel</th><th>Name</th><th>E-Mail</th><th>Std.</th><th>Löschen</th></tr>
+                    <tr><th>Kürzel</th><th>Name</th><th>E-Mail</th><th>Std.</th><th>Fachverantwortlich für</th><th>Löschen</th></tr>
                 </thead>
                 <tbody id="liste"></tbody>
             </table>
@@ -889,9 +934,28 @@ body:not(.gefuehrt) .nur-gefuehrt {
         el("liste").innerHTML = daten.lehrer.length
             ? daten.lehrer.map((l, i) =>
                 "<tr><td>" + esc(l.kuerzel) + "</td><td>" + esc(l.name) + "</td><td>" +
-                esc(l.email) + "</td><td>" + (l.stunden || "–") + "</td>" + loeschButton(i, l.kuerzel) + "</tr>").join("")
-            : leereZeile(5, "Noch keine Lehrer angelegt");
+                esc(l.email) + "</td><td>" + (l.stunden || "–") + "</td><td>" +
+                (l.verantwortlichFuer && l.verantwortlichFuer.length ? esc(l.verantwortlichFuer.join(", ")) : "–") +
+                "</td>" + loeschButton(i, l.kuerzel) + "</tr>").join("")
+            : leereZeile(6, "Noch keine Lehrer angelegt");
     }
+
+    /* Fächer aus den Stammdaten als Auswahl anzeigen */
+    function faecherAnzeigen() {
+        const faecher = laden().faecher;
+        el("faecher-tags").innerHTML = faecher.map(f =>
+            '<label><input type="checkbox" name="fach" value="' + esc(f.name) + '"> ' + esc(f.name) + '</label>'
+        ).join("");
+        el("faecher-hinweis").innerHTML = faecher.length
+            ? "Mindestens ein Fach auswählen."
+            : 'Noch keine Fächer angelegt – zuerst unter <a href="#" onclick="redirect(\'Admin_Faecher_Ansicht.html\'); return false;">Fächer</a> anlegen.';
+    }
+
+    function verantwortlichUmschalten() {
+        el("fach-auswahl").hidden = !el("verantwortlich").checked;
+    }
+
+    el("verantwortlich").addEventListener("change", verantwortlichUmschalten);
 
     /* E-Mail aus dem Kürzel vorschlagen (MUS -> mus@htl.rennweg.at) */
     el("kuerzel").addEventListener("input", () => {
@@ -926,12 +990,21 @@ body:not(.gefuehrt) .nur-gefuehrt {
         if (!(stunden > 0))
             return meldung("Bitte die Stundenanzahl angeben.", true);
 
+        const verantwortlich = el("verantwortlich").checked;
+        const verantwortlichFuer = verantwortlich
+            ? [...document.querySelectorAll("#faecher-tags input:checked")].map(c => c.value)
+            : [];
+        if (verantwortlich && !verantwortlichFuer.length)
+            return meldung("Bitte mindestens ein Fach auswählen, für das der Lehrer fachverantwortlich ist.", true);
 
-        daten.lehrer.push({ kuerzel: kuerzel, name: name, email: email, stunden: stunden });
+
+        daten.lehrer.push({ kuerzel: kuerzel, name: name, email: email, stunden: stunden,
+            verantwortlichFuer: verantwortlichFuer });
         speichern(daten);
 
         el("formular").reset();
         emailSelbstGeaendert = false;
+        verantwortlichUmschalten();
         el("kuerzel").focus();
         meldung("Lehrer „" + kuerzel + "“ gespeichert – OTP-E-Mail an " + email + " gesendet (im Prototyp nur simuliert).");
         anzeigen();
@@ -949,6 +1022,7 @@ body:not(.gefuehrt) .nur-gefuehrt {
         anzeigen();
     });
 
+    faecherAnzeigen();
     anzeigen();
 </script>
 </body>
