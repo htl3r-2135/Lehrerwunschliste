@@ -33,7 +33,6 @@
         <tr><th>Klasse</th><th>Fach</th><th>Std.</th><th>Eingetragen</th><th>Benötigt</th></tr>
       </thead>
       <tbody id="ansicht-tbody">
-        <!-- Wird per JavaScript befüllt -->
       </tbody>
     </table>
 
@@ -96,7 +95,6 @@
     function ansichtRendern() {
       const liste = datenAuslesen();
 
-      // Stand auch direkt an den Bearbeiten-Link anhängen
       bearbeitenBtn.href = "wuensche_bearbeiten.html?wuensche=" + encodeURIComponent(JSON.stringify(liste));
 
       tbody.replaceChildren();

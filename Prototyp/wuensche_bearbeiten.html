@@ -23,7 +23,6 @@
   <main>
     <h1>Wünsche bearbeiten</h1>
 
-    <!-- Neuen Wunsch hinzufügen: Schulstufe -> Klasse -> Fach -->
     <div class="zeile">
       <div>
         <label for="stufe">Schulstufe</label>
@@ -73,7 +72,6 @@
         <tr><th>Klasse</th><th>Fach</th><th>Std.</th><th>Nachricht</th><th></th></tr>
       </thead>
       <tbody id="wuensche-tbody">
-        <!-- Wird per JavaScript befüllt -->
       </tbody>
     </table>
 
@@ -121,7 +119,6 @@
       }
     }
 
-    // ---------- Elemente ----------
     const stufe = document.getElementById("stufe");
     const klasse = document.getElementById("klasse");
     const fach = document.getElementById("fach");
@@ -135,7 +132,6 @@
     let gewaehlteStufe = null;
     let gewaehlteKlasse = null;
 
-    // ---------- Daten laden (aus window.name, URL oder localStorage) ----------
     function datenAuslesen() {
       try {
         if (window.name && window.name.startsWith("WUENSCHE:")) {
@@ -166,7 +162,6 @@
       } catch (e) {}
     }
 
-    // ---------- Fehlerbehandlung ----------
     function zeigeFehler(element, nachricht) {
       const fehler = document.getElementById(element.id + "-fehler");
       if (fehler) {
@@ -185,7 +180,6 @@
       element.removeAttribute("aria-invalid");
     }
 
-    // ---------- Hilfsfunktionen ----------
     function zelle(text) {
       const td = document.createElement("td");
       td.textContent = text;
@@ -248,7 +242,6 @@
       tbody.appendChild(tr);
     }
 
-    // ---------- Initialisierung beim Laden ----------
     function wuenscheLaden() {
       const liste = datenAuslesen();
       tbody.replaceChildren();
@@ -258,7 +251,6 @@
       zusammenfassungAktualisieren();
     }
 
-    // ---------- Schritt 1: Schulstufe ----------
     stufe.addEventListener("change", function () {
       gewaehlteStufe = Number(stufe.value);
       gewaehlteKlasse = null;
@@ -280,7 +272,6 @@
       faecherZuruecksetzen();
     });
 
-    // ---------- Schritt 2: Klasse auswählen ----------
     klasse.addEventListener("change", function () {
       loescheFehler(klasse);
 
@@ -298,13 +289,11 @@
       }
     });
 
-    // ---------- Schritt 3: Fach ----------
     fach.addEventListener("change", function () {
       loescheFehler(fach);
       std.value = fach.selectedOptions[0].dataset.std;
     });
 
-    // ---------- Zusammenfassung unter der Tabelle ----------
     function zusammenfassungAktualisieren() {
       let summe = 0;
       for (const zeile of tbody.rows) {
@@ -314,7 +303,6 @@
         "Stundenausmaß " + AUSMASS + " | Eingetragen " + summe + " | Rest " + (AUSMASS - summe);
     }
 
-    // ---------- Wunsch hinzufügen ----------
     addButton.addEventListener("click", function () {
       loescheFehler(stufe);
       loescheFehler(klasse);
@@ -354,7 +342,6 @@
       zusammenfassungAktualisieren();
     });
 
-    // ---------- Wunsch entfernen ----------
     tbody.addEventListener("click", function (event) {
       const button = event.target.closest(".loeschen");
       if (!button) return;
@@ -362,7 +349,6 @@
       zusammenfassungAktualisieren();
     });
 
-    // ---------- Speichern & zur Ansicht wechseln ----------
     saveButton.addEventListener("click", function () {
       const aktuelleWuensche = [];
       for (const zeile of tbody.rows) {
