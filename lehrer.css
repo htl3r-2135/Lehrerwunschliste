@@ -146,9 +146,9 @@ nav a:hover {
 
 /* AKTIVE NAVIGATION JE NACH SEITE */
 
-body:has(.uebersicht) nav a[href="Lehrer_ansicht.html"],
-body:has(#klasse) nav a[href="Lehrer_ansicht.html"],
-body:has(#ausmass) nav a[href="profil_kompetenzen.html"] {
+body:has(.uebersicht) nav a[href="./Lehrer_ansicht.html"],
+body:has(#klasse) nav a[href="./Lehrer_ansicht.html"],
+body:has(#ausmass) nav a[href="./profil_kompetenzen.html"] {
     background: var(--farbe-primaer-hell);
     color: var(--farbe-primaer-dunkel);
 }
