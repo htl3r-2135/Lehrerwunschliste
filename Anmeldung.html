@@ -34,13 +34,13 @@
 
             switch(email.toLowerCase()) {
                 case "bay@htl.rennweg.at":
-                    redirect("./Fachverantwortliche_Ansicht.html");
+                    redirect("Fachverantwortliche_Ansicht.html");
                 break;     
                 case "sdo@htl.rennweg.at":
-                    redirect("./Admin_Ansicht.html");
+                    redirect("Admin_Ansicht.html");
                 break;
                 case "swr@htl.rennweg.at":
-                    redirect("./Lehrer_Ansicht.html");
+                    redirect("Lehrer_ansicht.html");
                 break;
                 default:
                     fehlerAnzeigen("Diesen User gibt es nicht. Bitte überprüfen Sie die E-Mail-Adresse.");
@@ -57,7 +57,7 @@
                 return;
             }else {
                 alert("Ein Link zum Zurücksetzen des Passworts wurde an Ihre E-Mail-Adresse (falls vorhanden) gesendet.");
-                redirect("./Passwort_aendern.html");
+                redirect("Passwort_aendern.html");
             }
         }
 
