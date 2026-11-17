@@ -11,7 +11,16 @@
            Die Daten liegen im localStorage des Browsers.
            ------------------------------------------ */
 
-        const SPEICHER_KEY = "lwl.stammdaten.v1";
+        /* Alle Schuljahre liegen unter einem Schlüssel:
+           { aktuell: "2026/27", jahre: { "2024/25": {...}, "2025/26": {...}, ... } }
+           Nur das aktuelle Schuljahr darf bearbeitet werden – vergangene
+           Schuljahre sind ein reines Archiv (nur lesen / übernehmen). */
+
+        const SPEICHER_KEY = "lwl.schuljahre.v1";
+        const ALTER_SPEICHER_KEY = "lwl.stammdaten.v1";
+        const AKTUELLES_SCHULJAHR = "2026/27";
+        const KATEGORIEN = ["abteilungen", "klassen", "faecher", "lehrer"];
+        const KATEGORIE_NAMEN = { abteilungen: "Abteilungen", klassen: "Klassen", faecher: "Fächer", lehrer: "Lehrer" };
 
         const STANDARD_DATEN = {
             abteilungen: ["WEBT", "Informationstechnologie", "Mechatronik"],
@@ -24,27 +33,222 @@
             lehrer: []
         };
 
+        /* Beispieldaten für vergangene Schuljahre (nur im Prototyp) */
+        const ARCHIV_DATEN = {
+            "2024/25": {
+                abteilungen: ["Informationstechnologie", "Mechatronik"],
+                klassen: [
+                    { name: "2CN", abteilung: "Informationstechnologie", stufe: 2, schueler: 26 },
+                    { name: "3CN", abteilung: "Informationstechnologie", stufe: 3, schueler: 24 },
+                    { name: "3AM", abteilung: "Mechatronik", stufe: 3, schueler: 25 }
+                ],
+                faecher: [
+                    { name: "POS", art: "Theorie/Labor", abteilungen: ["Informationstechnologie"], stufen: [2, 3], wochenstd: 4, teiler: 12 },
+                    { name: "MECH", art: "Labor", abteilungen: ["Mechatronik"], stufen: [3], wochenstd: 3, teiler: 8 }
+                ],
+                lehrer: [
+                    { kuerzel: "MUS", name: "Max Mustermann", email: "mus@htl.rennweg.at", stunden: 22, verantwortlichFuer: ["POS"] },
+                    { kuerzel: "HUB", name: "Anna Huber", email: "hub@htl.rennweg.at", stunden: 20, verantwortlichFuer: [] },
+                    { kuerzel: "GRU", name: "Peter Gruber", email: "gru@htl.rennweg.at", stunden: 18, verantwortlichFuer: ["MECH"] }
+                ]
+            },
+            "2025/26": {
+                abteilungen: ["WEBT", "Informationstechnologie", "Mechatronik"],
+                klassen: [
+                    { name: "3CN", abteilung: "Informationstechnologie", stufe: 3, schueler: 25 },
+                    { name: "4CN", abteilung: "Informationstechnologie", stufe: 4, schueler: 23 },
+                    { name: "4AX", abteilung: "WEBT", stufe: 4, schueler: 24 },
+                    { name: "4AM", abteilung: "Mechatronik", stufe: 4, schueler: 22 }
+                ],
+                faecher: [
+                    { name: "POS", art: "Theorie/Labor", abteilungen: ["Informationstechnologie"], stufen: [3, 4], wochenstd: 4, teiler: 12 },
+                    { name: "MEDT", art: "Theorie/Labor", abteilungen: ["WEBT"], stufen: [4], wochenstd: 3, teiler: 12 },
+                    { name: "MECH", art: "Labor", abteilungen: ["Mechatronik"], stufen: [4], wochenstd: 3, teiler: 8 }
+                ],
+                lehrer: [
+                    { kuerzel: "MUS", name: "Max Mustermann", email: "mus@htl.rennweg.at", stunden: 22, verantwortlichFuer: ["POS"] },
+                    { kuerzel: "HUB", name: "Anna Huber", email: "hub@htl.rennweg.at", stunden: 20, verantwortlichFuer: ["MEDT"] },
+                    { kuerzel: "BAU", name: "Lisa Bauer", email: "bau@htl.rennweg.at", stunden: 16, verantwortlichFuer: [] },
+                    { kuerzel: "WAG", name: "Thomas Wagner", email: "wag@htl.rennweg.at", stunden: 21, verantwortlichFuer: ["MECH"] }
+                ]
+            }
+        };
+
+        /* Gewähltes Schuljahr aus der URL (?jahr=2025/26), sonst das aktuelle */
+        const SCHULJAHR =
+            new URLSearchParams(window.location.search).get("jahr") || AKTUELLES_SCHULJAHR;
+        const NUR_LESEN = SCHULJAHR !== AKTUELLES_SCHULJAHR;
+
+        /* SPEICHER
+           Wird der Prototyp per Doppelklick geöffnet (file://), hat z. B. in
+           Firefox jede HTML-Datei ihren EIGENEN localStorage – die Seiten sehen
+           die Änderungen der anderen Seiten also nicht. Deshalb werden die Daten
+           bei jedem Seitenwechsel zusätzlich in der Adresse (#lwl=...) mitgegeben.
+           Jeder Stand hat einen Zeitstempel ("stand"); es gewinnt immer der neueste. */
+
+        const HASH_PREFIX = "#lwl=";
         let zwischenspeicher = null;
 
-        function laden() {
-            let daten = null;
-            try {
-                daten = JSON.parse(localStorage.getItem(SPEICHER_KEY));
-            } catch (e) {}
-            if (!daten) daten = zwischenspeicher;
-            if (!daten) daten = JSON.parse(JSON.stringify(STANDARD_DATEN));
-            for (const liste of ["abteilungen", "klassen", "faecher", "lehrer"]) {
+        function kopie(wert) {
+            return JSON.parse(JSON.stringify(wert));
+        }
+
+        function vervollstaendigen(daten) {
+            daten = daten || {};
+            for (const liste of KATEGORIEN) {
                 if (!Array.isArray(daten[liste])) daten[liste] = [];
             }
             return daten;
         }
 
-        function speichern(daten) {
-            zwischenspeicher = daten;
+        function ausAdresse() {
+            if (!window.location.hash.startsWith(HASH_PREFIX)) return null;
             try {
-                localStorage.setItem(SPEICHER_KEY, JSON.stringify(daten));
+                return JSON.parse(decodeURIComponent(window.location.hash.slice(HASH_PREFIX.length)));
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function ausSpeicher() {
+            try {
+                return JSON.parse(localStorage.getItem(SPEICHER_KEY));
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function neuester(kandidaten) {
+            let bester = null;
+            for (const k of kandidaten) {
+                if (!k || !k.jahre) continue;
+                if (!bester || (k.stand || 0) > (bester.stand || 0)) bester = k;
+            }
+            return bester;
+        }
+
+        /* Stand im Speicher dieser Seite UND in der Adresse ablegen */
+        function ablegen(alles) {
+            zwischenspeicher = alles;
+            const text = JSON.stringify(alles);
+            try {
+                localStorage.setItem(SPEICHER_KEY, text);
+            } catch (e) {}
+            try {
+                history.replaceState(history.state, "", window.location.pathname +
+                    window.location.search + HASH_PREFIX + encodeURIComponent(text));
             } catch (e) {}
         }
+
+        function allesLaden() {
+            let alles = neuester([zwischenspeicher, ausAdresse(), ausSpeicher()]);
+            if (!alles) {
+                /* Erster Start: Archiv anlegen, bisherige Daten (alter Schlüssel)
+                   werden zum aktuellen Schuljahr. */
+                let bisher = null;
+                try {
+                    bisher = JSON.parse(localStorage.getItem(ALTER_SPEICHER_KEY));
+                } catch (e) {}
+                alles = { aktuell: AKTUELLES_SCHULJAHR, stand: 0, jahre: kopie(ARCHIV_DATEN) };
+                alles.jahre[AKTUELLES_SCHULJAHR] = bisher || kopie(STANDARD_DATEN);
+                ablegen(alles);
+            }
+            alles = kopie(alles);
+            if (!alles.jahre[AKTUELLES_SCHULJAHR]) alles.jahre[AKTUELLES_SCHULJAHR] = vervollstaendigen();
+            for (const jahr in alles.jahre) vervollstaendigen(alles.jahre[jahr]);
+            return alles;
+        }
+
+        function allesSpeichern(alles) {
+            const bisher = (zwischenspeicher && zwischenspeicher.stand) || 0;
+            alles.stand = Math.max(Date.now(), bisher + 1);
+            ablegen(alles);
+        }
+
+        /* Andere Seite des Prototyps öffnen und dabei die Daten mitgeben.
+           location.replace: so bleibt keine veraltete Seite im Browser-Verlauf
+           liegen, die man mit "Zurück" wieder mit alten Daten sehen würde. */
+        function seiteOeffnen(url) {
+            window.location.replace(url.split("#")[0] + HASH_PREFIX +
+                encodeURIComponent(JSON.stringify(allesLaden())));
+        }
+
+        /* Alle Schuljahre, neuestes zuerst */
+        function schuljahre() {
+            return Object.keys(allesLaden().jahre).sort().reverse();
+        }
+
+        /* Das Schuljahr direkt vor "jahr" (oder null) */
+        function vorjahr(jahr) {
+            const liste = schuljahre();
+            const index = liste.indexOf(jahr);
+            return index >= 0 && index + 1 < liste.length ? liste[index + 1] : null;
+        }
+
+        /* Daten des gewählten Schuljahres (oder eines bestimmten) */
+        function laden(jahr) {
+            return vervollstaendigen(allesLaden().jahre[jahr || SCHULJAHR]);
+        }
+
+        function speichern(daten) {
+            if (NUR_LESEN) {
+                alert("Das Schuljahr " + SCHULJAHR + " ist abgeschlossen und kann nicht mehr bearbeitet werden.");
+                return false;
+            }
+            const alles = allesLaden();
+            alles.jahre[AKTUELLES_SCHULJAHR] = daten;
+            allesSpeichern(alles);
+            return true;
+        }
+
+        /* Woran erkennt man, dass ein Eintrag schon existiert? */
+        function schluessel(kategorie, eintrag) {
+            if (kategorie === "abteilungen") return String(eintrag).trim().toLowerCase();
+            if (kategorie === "lehrer") return String(eintrag.kuerzel).trim().toLowerCase();
+            return String(eintrag.name).trim().toLowerCase();
+        }
+
+        /* Übernimmt Einträge eines (vergangenen) Schuljahres ins aktuelle.
+           Bereits vorhandene Einträge werden nicht doppelt angelegt.
+           Ergebnis: { lehrer: { neu: 2, vorhanden: 1 }, ... } */
+        function uebernehmen(quellJahr, kategorien) {
+            const alles = allesLaden();
+            const quelle = vervollstaendigen(alles.jahre[quellJahr]);
+            const ziel = vervollstaendigen(alles.jahre[AKTUELLES_SCHULJAHR]);
+            const ergebnis = {};
+            for (const kategorie of kategorien) {
+                const vorhanden = new Set(ziel[kategorie].map(e => schluessel(kategorie, e)));
+                ergebnis[kategorie] = { neu: 0, vorhanden: 0 };
+                for (const eintrag of quelle[kategorie]) {
+                    if (vorhanden.has(schluessel(kategorie, eintrag))) {
+                        ergebnis[kategorie].vorhanden++;
+                    } else {
+                        ziel[kategorie].push(kopie(eintrag));
+                        vorhanden.add(schluessel(kategorie, eintrag));
+                        ergebnis[kategorie].neu++;
+                    }
+                }
+            }
+            alles.jahre[AKTUELLES_SCHULJAHR] = ziel;
+            allesSpeichern(alles);
+            return ergebnis;
+        }
+
+        function ergebnisText(ergebnis) {
+            return Object.keys(ergebnis).map(k =>
+                KATEGORIE_NAMEN[k] + ": " + ergebnis[k].neu + " übernommen" +
+                (ergebnis[k].vorhanden ? ", " + ergebnis[k].vorhanden + " bereits vorhanden" : "")
+            ).join(" · ");
+        }
+
+        /* Beim Zurück-Navigieren zeigt der Browser sonst eine alte,
+           zwischengespeicherte Version der Seite (veraltete Zahlen). */
+        window.addEventListener("pageshow", e => {
+            if (e.persisted) window.location.reload();
+        });
+
+        /* Beim Öffnen: neuesten Stand übernehmen und auf dieser Seite ablegen */
+        ablegen(allesLaden());
 
         /* Wurde die Seite über Admin_Uebersicht.html geöffnet (?start=neu),
            führt "Zurück" wieder dorthin – sonst zu Admin_Ansicht.html. */
@@ -57,7 +261,7 @@
             : "Admin_Ansicht.html";
 
         function logout() {
-            window.location.href = "Anmeldung.html";
+            seiteOeffnen("Anmeldung.html");
         }
 
         /* Geführte Stammdatenerstellung (?gefuehrt=1): nur dann werden
@@ -69,11 +273,15 @@
             const parameter = [];
             if (VON_NEUER_UEBERSICHT) parameter.push("start=neu");
             if (GEFUEHRT) parameter.push("gefuehrt=1");
-            window.location.href = file + (parameter.length ? "?" + parameter.join("&") : "");
+            if (NUR_LESEN) parameter.push("jahr=" + encodeURIComponent(SCHULJAHR));
+            seiteOeffnen(file + (parameter.length ? "?" + parameter.join("&") : ""));
         }
 
         function zurUebersicht(from) {
-            window.location.href = STARTSEITE + (from ? "?from=" + encodeURIComponent(from) : "");
+            const parameter = [];
+            if (from) parameter.push("from=" + encodeURIComponent(from));
+            if (NUR_LESEN) parameter.push("jahr=" + encodeURIComponent(SCHULJAHR));
+            seiteOeffnen(STARTSEITE + (parameter.length ? "?" + parameter.join("&") : ""));
         }
 
         function el(id) {
@@ -104,6 +312,78 @@
         function leereZeile(spalten, text) {
             return '<tr><td class="leer" colspan="' + spalten + '">' + text + '</td></tr>';
         }
+
+        /* ------------------------------------------
+           Schuljahr-Leiste: im Archiv (vergangenes Schuljahr)
+           ist die Seite nur lesbar und die Einträge können ins
+           aktuelle Schuljahr übernommen werden. Im aktuellen
+           Schuljahr kann man die Einträge des Vorjahres übernehmen.
+           ------------------------------------------ */
+
+        const SEITEN_KATEGORIE =
+            ((window.location.pathname.match(/Admin_(\w+?)_Ansicht/) || [])[1] || "").toLowerCase();
+
+        function schuljahrLeisteAnzeigen() {
+            const kategorie = SEITEN_KATEGORIE;
+            const titel = document.querySelector("header h2");
+            titel.textContent = titel.textContent.replace(/Schuljahr .*/,
+                "Schuljahr " + SCHULJAHR + (NUR_LESEN ? " (Archiv)" : ""));
+
+            const leiste = document.createElement("div");
+            leiste.className = "schuljahr-leiste";
+
+            if (NUR_LESEN) {
+                document.body.classList.add("archiv");
+                el("formular").closest(".karte").style.display = "none";
+                document.querySelectorAll("th").forEach(th => {
+                    if (/Löschen|Bearbeiten/.test(th.textContent)) th.classList.add("aktion");
+                });
+
+                const anzahl = laden()[kategorie].length;
+                leiste.innerHTML =
+                    '<p><strong>Archiv – nur lesbar.</strong> Das Schuljahr ' + esc(SCHULJAHR) +
+                    ' ist abgeschlossen und kann nicht mehr bearbeitet werden.</p>' +
+                    (anzahl ? '<button type="button" class="primaer" id="uebernehmen">' +
+                        'Alle ' + KATEGORIE_NAMEN[kategorie] + ' ins Schuljahr ' + AKTUELLES_SCHULJAHR +
+                        ' übernehmen</button>' : '');
+            } else {
+                const vj = vorjahr(SCHULJAHR);
+                const anzahl = vj ? laden(vj)[kategorie].length : 0;
+                if (!anzahl) return;
+                leiste.innerHTML =
+                    '<p>Im Schuljahr ' + esc(vj) + ' gab es ' + anzahl + ' ' +
+                    KATEGORIE_NAMEN[kategorie] + '.</p>' +
+                    '<button type="button" id="vorjahr-ansehen">Ansehen</button>' +
+                    '<button type="button" class="primaer" id="uebernehmen">Aus ' + esc(vj) +
+                    ' übernehmen</button>';
+            }
+
+            el("meldung").before(leiste);
+
+            const ansehen = el("vorjahr-ansehen");
+            if (ansehen) ansehen.addEventListener("click", () => {
+                seiteOeffnen(window.location.pathname.split("/").pop() +
+                    "?jahr=" + encodeURIComponent(vorjahr(SCHULJAHR)));
+            });
+
+            const knopf = el("uebernehmen");
+            if (knopf) knopf.addEventListener("click", () => {
+                const quelle = NUR_LESEN ? SCHULJAHR : vorjahr(SCHULJAHR);
+                if (!confirm(KATEGORIE_NAMEN[kategorie] + " aus " + quelle + " ins Schuljahr " +
+                    AKTUELLES_SCHULJAHR + " übernehmen?\nBereits vorhandene Einträge werden nicht doppelt angelegt."))
+                    return;
+                const text = ergebnisText(uebernehmen(quelle, [kategorie]));
+                if (NUR_LESEN) {
+                    alert(text);
+                    seiteOeffnen(window.location.pathname.split("/").pop());
+                } else {
+                    meldung(text);
+                    anzeigen();
+                }
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", schuljahrLeisteAnzeigen);
     </script>
     <style>
 
@@ -843,6 +1123,34 @@ main > h3 {
 
 #fach-auswahl .hinweis {
     margin-bottom: 24px;
+}
+
+/* SCHULJAHR / ARCHIV */
+
+.schuljahr-leiste {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 14px;
+
+    margin-bottom: 24px;
+    padding: 16px 20px;
+
+    background: var(--farbe-primaer-sehr-hell);
+    border: 1px solid var(--farbe-rahmen-stark);
+    border-radius: 12px;
+}
+
+.schuljahr-leiste p {
+    flex: 1 1 260px;
+    margin: 0;
+    font-size: 14px;
+}
+
+body.archiv td.loeschen,
+body.archiv th.aktion,
+body.archiv .nur-gefuehrt {
+    display: none !important;
 }
 
 /* GEFÜHRTE STAMMDATENERSTELLUNG */
