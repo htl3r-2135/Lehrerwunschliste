@@ -1,4 +1,5 @@
 <!-- Claude Sonnet 5.5 verwendet für Inhalte und JS-Logik -->
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -22,27 +23,35 @@
   <main>
     <h1>Wünsche bearbeiten</h1>
 
+    <!-- Neuen Wunsch hinzufügen: Schulstufe -> Klasse -> Fach -->
     <div class="zeile">
       <div>
-        <label for="klasse">Klasse</label>
-        <select id="klasse">
-          <option value="" disabled selected>– Klasse wählen –</option>
-          <option value="BI-5">5BI</option>
-          <option value="AX-5">5AX</option>
-          <option value="CN-4">4CN</option>
+        <label for="stufe">Schulstufe</label>
+        <select id="stufe" aria-describedby="stufe-fehler">
+          <option value="" disabled selected>– Schulstufe wählen –</option>
+          <option value="1">1. Klasse</option>
+          <option value="2">2. Klasse</option>
+          <option value="3">3. Klasse</option>
+          <option value="4">4. Klasse</option>
+          <option value="5">5. Klasse</option>
         </select>
+        <p class="fehler" id="stufe-fehler" hidden></p>
+      </div>
+
+      <div>
+        <label for="klasse">Klasse</label>
+        <select id="klasse" disabled aria-describedby="klasse-fehler">
+          <option value="" disabled selected>– zuerst Schulstufe wählen –</option>
+        </select>
+        <p class="fehler" id="klasse-fehler" hidden></p>
       </div>
 
       <div>
         <label for="fach">Fach</label>
-        <select id="fach">
+        <select id="fach" disabled aria-describedby="fach-fehler">
           <option value="" disabled selected>– zuerst Klasse wählen –</option>
-          <option data-gruppe="BI-5" data-std="3">MEDT</option>
-          <option data-gruppe="BI-5" data-std="2">SYT</option>
-          <option data-gruppe="AX-5" data-std="2">WebTech Übung</option>
-          <option data-gruppe="CN-4" data-std="3">AM</option>
-          <option data-gruppe="CN-4" data-std="2">NWT</option>
         </select>
+        <p class="fehler" id="fach-fehler" hidden></p>
       </div>
 
       <div class="schmal">
@@ -52,13 +61,11 @@
 
       <div class="voll">
         <label for="wunsch-nachricht">Nachricht an Fachverantwortliche(n) zu diesem Wunsch (optional)</label>
-        <textarea id="wunsch-nachricht" rows="2"></textarea>
+        <textarea id="wunsch-nachricht" rows="2" maxlength="300"></textarea>
       </div>
     </div>
-    <p class="hinweis">Es werden nur Fächer angezeigt, die zu Abteilung und Schulstufe der Klasse passen. Die Stundenanzahl ist pro Fach fest vorgegeben.</p>
 
     <button type="button" class="btn" id="add-wunsch">+ Wunsch hinzufügen</button>
-    <p class="fehler" id="fehler" hidden></p>
 
     <h2 style="font-size:1.1em; margin-top:24px;">Meine Wünsche</h2>
     <table>
@@ -66,21 +73,7 @@
         <tr><th>Klasse</th><th>Fach</th><th>Std.</th><th>Nachricht</th><th></th></tr>
       </thead>
       <tbody id="wuensche-tbody">
-        <tr>
-          <td>5BI</td><td>MEDT</td><td>3</td>
-          <td><input type="text" class="nachricht-feld" aria-label="Nachricht zu 5BI MEDT"></td>
-          <td><button type="button" class="btn loeschen" aria-label="Wunsch entfernen">✕</button></td>
-        </tr>
-        <tr>
-          <td>5AX</td><td>WebTech Übung</td><td>2</td>
-          <td><input type="text" class="nachricht-feld" aria-label="Nachricht zu 5AX WebTech Übung"></td>
-          <td><button type="button" class="btn loeschen" aria-label="Wunsch entfernen">✕</button></td>
-        </tr>
-        <tr>
-          <td>4CN</td><td>AM</td><td>3</td>
-          <td><input type="text" class="nachricht-feld" aria-label="Nachricht zu 4CN AM"></td>
-          <td><button type="button" class="btn loeschen" aria-label="Wunsch entfernen">✕</button></td>
-        </tr>
+        <!-- Wird per JavaScript befüllt -->
       </tbody>
     </table>
 
@@ -88,92 +81,158 @@
 
     <div class="leiste">
       <a class="btn" href="Lehrer_ansicht.html">Abbrechen</a>
-      <a class="btn" href="Lehrer_ansicht.html">Save</a>
+      <button type="button" class="btn" id="save-btn">Save</button>
     </div>
   </main>
 
   <script>
     const AUSMASS = 20;
+    const STORAGE_KEY = "lehrer_wuensche_bay";
 
+    const STANDARD_WUENSCHE = [
+      { klasse: "5BI", fach: "MEDT", std: 3, nachricht: "" },
+      { klasse: "5AX", fach: "WebTech Übung", std: 2, nachricht: "" },
+      { klasse: "4CN", fach: "AM", std: 3, nachricht: "" }
+    ];
+
+    const FAECHER = {
+      "BI-1": [["Programmieren", 3], ["Mathematik", 2]],
+      "BI-2": [["Programmieren", 3], ["Netzwerktechnik", 2]],
+      "BI-3": [["Datenbanken", 2], ["SYT", 3]],
+      "BI-4": [["SYT", 2], ["Datenbanken", 2], ["WebTech Übung", 3]],
+      "BI-5": [["MEDT", 3], ["SYT", 2]],
+      "AX-1": [["Programmieren", 3], ["Mathematik", 2]],
+      "AX-2": [["Programmieren", 3], ["Grafik", 2]],
+      "AX-3": [["WebTech", 3], ["Grafik", 2]],
+      "AX-4": [["WebTech", 3], ["Multimedia", 2]],
+      "AX-5": [["WebTech Übung", 2], ["Multimedia", 2]],
+      "CN-1": [["Netzwerktechnik", 3], ["Mathematik", 2]],
+      "CN-2": [["Netzwerktechnik", 3], ["Elektronik", 2]],
+      "CN-3": [["NWT", 2], ["AM", 3]],
+      "CN-4": [["AM", 3], ["NWT", 2]],
+      "CN-5": [["NWT", 3], ["AM", 2]]
+    };
+
+    const ABTEILUNGEN = ["BI", "AX", "CN"];
+    const KLASSEN = [];
+    for (let stufeNr = 1; stufeNr <= 5; stufeNr++) {
+      for (const abt of ABTEILUNGEN) {
+        KLASSEN.push({ name: stufeNr + abt, stufe: stufeNr, gruppe: abt + "-" + stufeNr });
+      }
+    }
+
+    // ---------- Elemente ----------
+    const stufe = document.getElementById("stufe");
     const klasse = document.getElementById("klasse");
     const fach = document.getElementById("fach");
     const std = document.getElementById("std");
     const wunschNachricht = document.getElementById("wunsch-nachricht");
     const addButton = document.getElementById("add-wunsch");
+    const saveButton = document.getElementById("save-btn");
     const tbody = document.getElementById("wuensche-tbody");
     const zusammenfassung = document.getElementById("zusammenfassung");
-    const fehler = document.getElementById("fehler");
 
-    function fachListeAktualisieren() {
-      fach.selectedIndex = 0;
-      std.value = "";
+    let gewaehlteStufe = null;
+    let gewaehlteKlasse = null;
 
-      for (const option of fach.options) {
-        if (!option.dataset.gruppe) {
-
-          option.textContent = klasse.value ? "– Fach wählen –" : "– zuerst Klasse wählen –";
-          continue;
+    // ---------- Daten laden (aus window.name, URL oder localStorage) ----------
+    function datenAuslesen() {
+      try {
+        if (window.name && window.name.startsWith("WUENSCHE:")) {
+          return JSON.parse(window.name.slice("WUENSCHE:".length));
         }
-        const passt = option.dataset.gruppe === klasse.value;
-        option.hidden = !passt;
-        option.disabled = !passt;
+      } catch (e) {}
+
+      try {
+        const params = new URLSearchParams(window.location.search);
+        if (params.has("wuensche")) {
+          return JSON.parse(params.get("wuensche"));
+        }
+      } catch (e) {}
+
+      try {
+        const gespeichert = localStorage.getItem(STORAGE_KEY);
+        if (gespeichert) return JSON.parse(gespeichert);
+      } catch (e) {}
+
+      return STANDARD_WUENSCHE;
+    }
+
+    function datenSpeichern(liste) {
+      const json = JSON.stringify(liste);
+      window.name = "WUENSCHE:" + json;
+      try {
+        localStorage.setItem(STORAGE_KEY, json);
+      } catch (e) {}
+    }
+
+    // ---------- Fehlerbehandlung ----------
+    function zeigeFehler(element, nachricht) {
+      const fehler = document.getElementById(element.id + "-fehler");
+      if (fehler) {
+        fehler.textContent = nachricht;
+        fehler.hidden = false;
       }
+      element.setAttribute("aria-invalid", "true");
     }
 
-    klasse.addEventListener("change", fachListeAktualisieren);
-
-    fach.addEventListener("change", function () {
-      std.value = fach.selectedOptions[0].dataset.std;
-    });
-
-    function zusammenfassungAktualisieren() {
-      let summe = 0;
-      for (const zeile of tbody.rows) {
-        summe += Number(zeile.cells[2].textContent);
+    function loescheFehler(element) {
+      const fehler = document.getElementById(element.id + "-fehler");
+      if (fehler) {
+        fehler.textContent = "";
+        fehler.hidden = true;
       }
-      zusammenfassung.textContent =
-        "Stundenausmaß " + AUSMASS + " | Eingetragen " + summe + " | Rest " + (AUSMASS - summe);
+      element.removeAttribute("aria-invalid");
     }
 
-    function fehlerZeigen(text) {
-      fehler.textContent = text;
-      fehler.hidden = false;
-    }
-
+    // ---------- Hilfsfunktionen ----------
     function zelle(text) {
       const td = document.createElement("td");
       td.textContent = text;
       return td;
     }
 
-    addButton.addEventListener("click", function () {
-      fehler.hidden = true;
+    function platzhalterOption(text) {
+      const option = document.createElement("option");
+      option.value = "";
+      option.textContent = text;
+      option.disabled = true;
+      option.selected = true;
+      return option;
+    }
 
-      if (!klasse.value || !fach.value) {
-        fehlerZeigen("Bitte zuerst Klasse und Fach auswählen.");
-        return;
+    function faecherZuruecksetzen() {
+      fach.replaceChildren(platzhalterOption("– zuerst Klasse wählen –"));
+      fach.disabled = true;
+      std.value = "";
+    }
+
+    function faecherFuellen(k) {
+      fach.replaceChildren(platzhalterOption("– Fach wählen –"));
+      for (const eintrag of FAECHER[k.gruppe]) {
+        const option = document.createElement("option");
+        option.value = eintrag[0];
+        option.textContent = eintrag[0];
+        option.dataset.std = eintrag[1];
+        fach.appendChild(option);
       }
+      fach.disabled = false;
+      std.value = "";
+    }
 
-      const klasseName = klasse.selectedOptions[0].textContent;
-
-      for (const zeile of tbody.rows) {
-        if (zeile.cells[0].textContent === klasseName && zeile.cells[1].textContent === fach.value) {
-          fehlerZeigen("Diesen Wunsch gibt es bereits.");
-          return;
-        }
-      }
-
+    function zeileErstellen(klassenName, fachName, stunden, nachrichtText) {
       const tr = document.createElement("tr");
-      tr.appendChild(zelle(klasseName));
-      tr.appendChild(zelle(fach.value));
-      tr.appendChild(zelle(std.value));
+      tr.appendChild(zelle(klassenName));
+      tr.appendChild(zelle(fachName));
+      tr.appendChild(zelle(stunden));
 
       const nachrichtZelle = document.createElement("td");
       const nachrichtFeld = document.createElement("input");
       nachrichtFeld.type = "text";
       nachrichtFeld.className = "nachricht-feld";
-      nachrichtFeld.value = wunschNachricht.value;
-      nachrichtFeld.setAttribute("aria-label", "Nachricht zu " + klasseName + " " + fach.value);
+      nachrichtFeld.maxLength = 300;
+      nachrichtFeld.value = nachrichtText || "";
+      nachrichtFeld.setAttribute("aria-label", "Nachricht zu " + klassenName + " " + fachName);
       nachrichtZelle.appendChild(nachrichtFeld);
       tr.appendChild(nachrichtZelle);
 
@@ -187,20 +246,139 @@
       tr.appendChild(loeschZelle);
 
       tbody.appendChild(tr);
+    }
 
-      klasse.selectedIndex = 0;
-      fachListeAktualisieren();
+    // ---------- Initialisierung beim Laden ----------
+    function wuenscheLaden() {
+      const liste = datenAuslesen();
+      tbody.replaceChildren();
+      for (const w of liste) {
+        zeileErstellen(w.klasse, w.fach, w.std, w.nachricht);
+      }
+      zusammenfassungAktualisieren();
+    }
+
+    // ---------- Schritt 1: Schulstufe ----------
+    stufe.addEventListener("change", function () {
+      gewaehlteStufe = Number(stufe.value);
+      gewaehlteKlasse = null;
+
+      loescheFehler(stufe);
+      loescheFehler(klasse);
+      loescheFehler(fach);
+
+      klasse.replaceChildren(platzhalterOption("– Klasse wählen –"));
+      for (const k of KLASSEN) {
+        if (k.stufe !== gewaehlteStufe) continue;
+        const option = document.createElement("option");
+        option.value = k.name;
+        option.textContent = k.name;
+        klasse.appendChild(option);
+      }
+
+      klasse.disabled = false;
+      faecherZuruecksetzen();
+    });
+
+    // ---------- Schritt 2: Klasse auswählen ----------
+    klasse.addEventListener("change", function () {
+      loescheFehler(klasse);
+
+      const treffer = KLASSEN.find(function (k) {
+        return k.stufe === gewaehlteStufe && k.name === klasse.value;
+      });
+
+      if (treffer) {
+        gewaehlteKlasse = treffer;
+        loescheFehler(fach);
+        faecherFuellen(treffer);
+      } else {
+        gewaehlteKlasse = null;
+        faecherZuruecksetzen();
+      }
+    });
+
+    // ---------- Schritt 3: Fach ----------
+    fach.addEventListener("change", function () {
+      loescheFehler(fach);
+      std.value = fach.selectedOptions[0].dataset.std;
+    });
+
+    // ---------- Zusammenfassung unter der Tabelle ----------
+    function zusammenfassungAktualisieren() {
+      let summe = 0;
+      for (const zeile of tbody.rows) {
+        summe += Number(zeile.cells[2].textContent);
+      }
+      zusammenfassung.textContent =
+        "Stundenausmaß " + AUSMASS + " | Eingetragen " + summe + " | Rest " + (AUSMASS - summe);
+    }
+
+    // ---------- Wunsch hinzufügen ----------
+    addButton.addEventListener("click", function () {
+      loescheFehler(stufe);
+      loescheFehler(klasse);
+      loescheFehler(fach);
+
+      if (!gewaehlteStufe) {
+        zeigeFehler(stufe, "Bitte eine Schulstufe wählen.");
+        return;
+      }
+      if (klasse.value.trim() === "") {
+        zeigeFehler(klasse, "Bitte eine Klasse wählen.");
+        return;
+      }
+      if (!gewaehlteKlasse) {
+        zeigeFehler(klasse, "Diese Klasse gibt es in der " + gewaehlteStufe + ". Klasse nicht. Bitte aus der Liste wählen.");
+        return;
+      }
+      if (!fach.value) {
+        zeigeFehler(fach, "Bitte ein Fach wählen.");
+        return;
+      }
+
+      for (const zeile of tbody.rows) {
+        if (zeile.cells[0].textContent === gewaehlteKlasse.name &&
+            zeile.cells[1].textContent === fach.value) {
+          zeigeFehler(fach, "Diesen Wunsch gibt es bereits.");
+          return;
+        }
+      }
+
+      zeileErstellen(gewaehlteKlasse.name, fach.value, std.value, wunschNachricht.value);
+
+      fach.selectedIndex = 0;
+      std.value = "";
       wunschNachricht.value = "";
 
       zusammenfassungAktualisieren();
     });
 
+    // ---------- Wunsch entfernen ----------
     tbody.addEventListener("click", function (event) {
       const button = event.target.closest(".loeschen");
       if (!button) return;
       button.closest("tr").remove();
       zusammenfassungAktualisieren();
     });
+
+    // ---------- Speichern & zur Ansicht wechseln ----------
+    saveButton.addEventListener("click", function () {
+      const aktuelleWuensche = [];
+      for (const zeile of tbody.rows) {
+        aktuelleWuensche.push({
+          klasse: zeile.cells[0].textContent,
+          fach: zeile.cells[1].textContent,
+          std: Number(zeile.cells[2].textContent),
+          nachricht: zeile.querySelector(".nachricht-feld").value.trim()
+        });
+      }
+
+      datenSpeichern(aktuelleWuensche);
+      window.location.href = "Lehrer_ansicht.html?wuensche=" + encodeURIComponent(JSON.stringify(aktuelleWuensche));
+    });
+
+    wuenscheLaden();
   </script>
 </body>
 </html>

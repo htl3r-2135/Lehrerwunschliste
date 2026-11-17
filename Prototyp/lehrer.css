@@ -1175,3 +1175,42 @@ main.login-seite {
         font-size: 12px;
     }
 }
+/* ==========================================
+   16. SCHULSTUFE + KLASSE MIT SUCHFELD
+   Am ENDE von lehrer.css einfügen
+   (Der Block "15. Klassenauswahl" aus lehrer_ergaenzungen_3.css wird nicht mehr gebraucht)
+   ========================================== */
+
+/* GESPERRTE FELDER (Klasse/Fach, bis die vorherige Auswahl getroffen ist) */
+
+main input:disabled,
+main select:disabled {
+    background: var(--farbe-oberflaeche-sanft);
+    color: var(--farbe-text-sekundaer);
+    cursor: not-allowed;
+}
+
+main input:disabled:hover,
+main select:disabled:hover {
+    border-color: var(--farbe-rahmen);
+}
+
+/* EINGABEBEREICH: 4 Spalten (Schulstufe | Klasse | Fach | Std.) */
+
+@media (min-width: 951px) {
+    main:has(#klasse) > .zeile {
+        grid-template-columns:
+            minmax(0, 1fr)
+            minmax(0, 1.2fr)
+            minmax(0, 1.2fr)
+            100px;
+    }
+}
+
+/* TABLET: 2 Spalten, damit nichts gequetscht wird */
+
+@media (min-width: 601px) and (max-width: 950px) {
+    main:has(#klasse) > .zeile {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}

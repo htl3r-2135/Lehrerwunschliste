@@ -22,7 +22,7 @@
   <main>
     <h1>Derzeitige Wünsche</h1>
 
-    <div class="uebersicht">
+    <div class="uebersicht" id="uebersicht">
       <span>Stundenausmaß: 20</span>
       <span>Eingetragen: 8</span>
       <span>Rest: 12</span>
@@ -32,18 +32,117 @@
       <thead>
         <tr><th>Klasse</th><th>Fach</th><th>Std.</th><th>Eingetragen</th><th>Benötigt</th></tr>
       </thead>
-      <tbody>
-        <tr><td>5BI</td><td>MEDT</td><td>3</td><td>1</td><td>1</td></tr>
-        <tr><td>5AX</td><td>WebTech Übung</td><td>2</td><td>4</td><td>2</td></tr>
-        <tr><td>4CN</td><td>AM</td><td>3</td><td>2</td><td>1</td></tr>
+      <tbody id="ansicht-tbody">
+        <!-- Wird per JavaScript befüllt -->
       </tbody>
     </table>
 
     <div class="leiste">
       <a class="btn" href="profil_kompetenzen.html">Profil / Kompetenzen</a>
-      <a class="btn" href="wuensche_bearbeiten.html">Bearbeiten</a>
+      <a class="btn" id="bearbeiten-btn" href="wuensche_bearbeiten.html">Bearbeiten</a>
     </div>
   </main>
 
+  <script>
+    const AUSMASS = 20;
+    const STORAGE_KEY = "lehrer_wuensche_bay";
+
+    const STANDARD_WUENSCHE = [
+      { klasse: "5BI", fach: "MEDT", std: 3, nachricht: "" },
+      { klasse: "5AX", fach: "WebTech Übung", std: 2, nachricht: "" },
+      { klasse: "4CN", fach: "AM", std: 3, nachricht: "" }
+    ];
+
+    const STATUS_DATEN = {
+      "5BI|MEDT": { eingetragen: 1, benoetigt: 1 },
+      "5AX|WebTech Übung": { eingetragen: 4, benoetigt: 2 },
+      "4CN|AM": { eingetragen: 2, benoetigt: 1 }
+    };
+
+    const tbody = document.getElementById("ansicht-tbody");
+    const uebersicht = document.getElementById("uebersicht");
+    const bearbeitenBtn = document.getElementById("bearbeiten-btn");
+
+    function datenAuslesen() {
+      try {
+        if (window.name && window.name.startsWith("WUENSCHE:")) {
+          return JSON.parse(window.name.slice("WUENSCHE:".length));
+        }
+      } catch (e) {}
+
+      try {
+        const params = new URLSearchParams(window.location.search);
+        if (params.has("wuensche")) {
+          const daten = JSON.parse(params.get("wuensche"));
+          window.name = "WUENSCHE:" + JSON.stringify(daten);
+          return daten;
+        }
+      } catch (e) {}
+
+      try {
+        const gespeichert = localStorage.getItem(STORAGE_KEY);
+        if (gespeichert) return JSON.parse(gespeichert);
+      } catch (e) {}
+
+      return STANDARD_WUENSCHE;
+    }
+
+    function zelle(text) {
+      const td = document.createElement("td");
+      td.textContent = text;
+      return td;
+    }
+
+    function ansichtRendern() {
+      const liste = datenAuslesen();
+
+      // Stand auch direkt an den Bearbeiten-Link anhängen
+      bearbeitenBtn.href = "wuensche_bearbeiten.html?wuensche=" + encodeURIComponent(JSON.stringify(liste));
+
+      tbody.replaceChildren();
+      let summe = 0;
+
+      if (liste.length === 0) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 5;
+        td.textContent = "Noch keine Wünsche eingetragen.";
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+      } else {
+        for (const w of liste) {
+          summe += Number(w.std);
+          const status = STATUS_DATEN[w.klasse + "|" + w.fach] || { eingetragen: 1, benoetigt: 1 };
+
+          const tr = document.createElement("tr");
+          tr.appendChild(zelle(w.klasse));
+
+          const fachTd = document.createElement("td");
+          fachTd.textContent = w.fach;
+          if (w.nachricht) {
+            const note = document.createElement("div");
+            note.style.fontSize = "0.85em";
+            note.style.opacity = "0.75";
+            note.textContent = "Notiz: " + w.nachricht;
+            fachTd.appendChild(note);
+          }
+          tr.appendChild(fachTd);
+
+          tr.appendChild(zelle(w.std));
+          tr.appendChild(zelle(status.eingetragen));
+          tr.appendChild(zelle(status.benoetigt));
+
+          tbody.appendChild(tr);
+        }
+      }
+
+      uebersicht.innerHTML =
+        "<span>Stundenausmaß: " + AUSMASS + "</span>" +
+        "<span>Eingetragen: " + summe + "</span>" +
+        "<span>Rest: " + (AUSMASS - summe) + "</span>";
+    }
+
+    ansichtRendern();
+  </script>
 </body>
 </html>
