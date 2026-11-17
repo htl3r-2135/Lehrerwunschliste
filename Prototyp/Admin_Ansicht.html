@@ -4,19 +4,19 @@
     <title>Admin Ansicht</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <script>
-        /* Gemeinsame Prototyp-Logik (wie in den Admin-Stammdaten-Seiten) */
-
-        /* Alle Schuljahre liegen unter einem Schlüssel:
-           { aktuell: "2026/27", jahre: { "2024/25": {...}, "2025/26": {...}, ... } }
-           Nur das aktuelle Schuljahr darf bearbeitet werden – vergangene
-           Schuljahre sind ein reines Archiv (nur lesen / übernehmen). */
-
+        // Einstellungen und Beispieldaten
         const SPEICHER_KEY = "lwl.schuljahre.v1";
         const ALTER_SPEICHER_KEY = "lwl.stammdaten.v1";
         const AKTUELLES_SCHULJAHR = "2026/27";
         const KATEGORIEN = ["abteilungen", "klassen", "faecher", "lehrer"];
-        const KATEGORIE_NAMEN = { abteilungen: "Abteilungen", klassen: "Klassen", faecher: "Fächer", lehrer: "Lehrer" };
+        const KATEGORIE_NAMEN = {
+            abteilungen: "Abteilungen",
+            klassen: "Klassen",
+            faecher: "Fächer",
+            lehrer: "Lehrer"
+        };
 
         const STANDARD_DATEN = {
             abteilungen: ["WEBT", "Informationstechnologie", "Mechatronik"],
@@ -29,7 +29,6 @@
             lehrer: []
         };
 
-        /* Beispieldaten für vergangene Schuljahre (nur im Prototyp) */
         const ARCHIV_DATEN = {
             "2024/25": {
                 abteilungen: ["Informationstechnologie", "Mechatronik"],
@@ -70,18 +69,14 @@
             }
         };
 
-        /* Gewähltes Schuljahr aus der URL (?jahr=2025/26), sonst das aktuelle */
+        // Ausgewähltes Schuljahr
         const SCHULJAHR =
             new URLSearchParams(window.location.search).get("jahr") || AKTUELLES_SCHULJAHR;
         const NUR_LESEN = SCHULJAHR !== AKTUELLES_SCHULJAHR;
 
-        /* SPEICHER
-           Wird der Prototyp per Doppelklick geöffnet (file://), hat z. B. in
-           Firefox jede HTML-Datei ihren EIGENEN localStorage – die Seiten sehen
-           die Änderungen der anderen Seiten also nicht. Deshalb werden die Daten
-           bei jedem Seitenwechsel zusätzlich in der Adresse (#lwl=...) mitgegeben.
-           Jeder Stand hat einen Zeitstempel ("stand"); es gewinnt immer der neueste. */
-
+        // Daten laden und speichern
+        // Der URL-Hash gibt die Daten auch beim Öffnen über file:// weiter.
+        // Bei mehreren Datenständen entscheidet der Zeitstempel.
         const HASH_PREFIX = "#lwl=";
         let zwischenspeicher = null;
 
@@ -123,7 +118,6 @@
             return bester;
         }
 
-        /* Stand im Speicher dieser Seite UND in der Adresse ablegen */
         function ablegen(alles) {
             zwischenspeicher = alles;
             const text = JSON.stringify(alles);
@@ -139,8 +133,8 @@
         function allesLaden() {
             let alles = neuester([zwischenspeicher, ausAdresse(), ausSpeicher()]);
             if (!alles) {
-                /* Erster Start: Archiv anlegen, bisherige Daten (alter Schlüssel)
-                   werden zum aktuellen Schuljahr. */
+                
+                // Beim ersten Start vorhandene Daten dem aktuellen Schuljahr zuordnen.
                 let bisher = null;
                 try {
                     bisher = JSON.parse(localStorage.getItem(ALTER_SPEICHER_KEY));
@@ -161,27 +155,24 @@
             ablegen(alles);
         }
 
-        /* Andere Seite des Prototyps öffnen und dabei die Daten mitgeben.
-           location.replace: so bleibt keine veraltete Seite im Browser-Verlauf
-           liegen, die man mit "Zurück" wieder mit alten Daten sehen würde. */
+        // Navigation zwischen den Seiten
         function seiteOeffnen(url) {
+            // Ersetzen verhindert einen veralteten Datenstand im Browserverlauf.
             window.location.replace(url.split("#")[0] + HASH_PREFIX +
                 encodeURIComponent(JSON.stringify(allesLaden())));
         }
 
-        /* Alle Schuljahre, neuestes zuerst */
+        // Schuljahre verwalten
         function schuljahre() {
             return Object.keys(allesLaden().jahre).sort().reverse();
         }
 
-        /* Das Schuljahr direkt vor "jahr" (oder null) */
         function vorjahr(jahr) {
             const liste = schuljahre();
             const index = liste.indexOf(jahr);
             return index >= 0 && index + 1 < liste.length ? liste[index + 1] : null;
         }
 
-        /* Daten des gewählten Schuljahres (oder eines bestimmten) */
         function laden(jahr) {
             return vervollstaendigen(allesLaden().jahre[jahr || SCHULJAHR]);
         }
@@ -197,16 +188,15 @@
             return true;
         }
 
-        /* Woran erkennt man, dass ein Eintrag schon existiert? */
+        // Daten aus einem anderen Schuljahr übernehmen
+        // Abteilungen: Name; Lehrer: Kürzel; Klassen und Fächer: name.
         function schluessel(kategorie, eintrag) {
             if (kategorie === "abteilungen") return String(eintrag).trim().toLowerCase();
             if (kategorie === "lehrer") return String(eintrag.kuerzel).trim().toLowerCase();
             return String(eintrag.name).trim().toLowerCase();
         }
 
-        /* Übernimmt Einträge eines (vergangenen) Schuljahres ins aktuelle.
-           Bereits vorhandene Einträge werden nicht doppelt angelegt.
-           Ergebnis: { lehrer: { neu: 2, vorhanden: 1 }, ... } */
+        // Vorhandene Einträge bleiben erhalten; neue werden als Kopie ergänzt.
         function uebernehmen(quellJahr, kategorien) {
             const alles = allesLaden();
             const quelle = vervollstaendigen(alles.jahre[quellJahr]);
@@ -237,15 +227,15 @@
             ).join(" · ");
         }
 
-        /* Beim Zurück-Navigieren zeigt der Browser sonst eine alte,
-           zwischengespeicherte Version der Seite (veraltete Zahlen). */
+        // Beim Zurückgehen eine zwischengespeicherte Seite neu laden.
         window.addEventListener("pageshow", e => {
             if (e.persisted) window.location.reload();
         });
 
-        /* Beim Öffnen: neuesten Stand übernehmen und auf dieser Seite ablegen */
+        // Den neuesten Datenstand beim Öffnen übernehmen.
         ablegen(allesLaden());
 
+        // Anzeige und Navigation der Admin-Übersicht
         function esc(text) {
             return String(text).replace(/[&<>"']/g, zeichen => ({
                 "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
@@ -256,7 +246,7 @@
             seiteOeffnen("Anmeldung.html");
         }
 
-        /* Seite öffnen – im Archiv wird das gewählte Schuljahr mitgegeben */
+        // Im Archiv das ausgewählte Schuljahr an die nächste Seite weitergeben.
         function redirect(file) {
             if (NUR_LESEN) {
                 file += (file.includes("?") ? "&" : "?") + "jahr=" + encodeURIComponent(SCHULJAHR);
@@ -269,7 +259,6 @@
                 (jahr === AKTUELLES_SCHULJAHR ? "" : "?jahr=" + encodeURIComponent(jahr)));
         }
 
-        /* Zähler der Kacheln immer frisch aus den gespeicherten Daten berechnen */
         function zaehlerAnzeigen() {
             const daten = laden();
             for (const kategorie of KATEGORIEN) {
@@ -305,8 +294,7 @@
             zaehlerAnzeigen();
         }
 
-        /* DIALOG "DATEN ÜBERNEHMEN" */
-
+        // Dialog zur Datenübernahme
         function dialogKategorienAnzeigen() {
             const quelle = document.getElementById("quelle").value;
             const daten = laden(quelle);
@@ -345,6 +333,7 @@
             else zaehlerAnzeigen();
         }
 
+        // Seite initialisieren
         onload = () => {
             const urlParams = new URLSearchParams(window.location.search);
 
@@ -359,609 +348,606 @@
             seiteAufbauen();
         }
 
-        /* Änderungen aus einem anderen Tab sofort übernehmen */
+        // Zähler bei Änderungen in einem anderen Tab aktualisieren.
         window.addEventListener("storage", e => {
             if (e.key === SPEICHER_KEY) zaehlerAnzeigen();
         });
+    
     </script>
+
     <style>
-        
-@import url("farben.css");
-
-/* GRUNDEINSTELLUNGEN */
-
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-}
-
-html {
-    font-family: -apple-system, BlinkMacSystemFont,
-        "Segoe UI", Inter, Arial, sans-serif;
-}
-
-body {
-    margin: 0;
-    min-height: 100vh;
-    color: var(--farbe-text);
-    background: var(--farbe-hintergrund);
-}
-
-/* TOPBAR */
-
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-
-    width: 100%;
-    min-height: 88px;
-    padding: 20px max(28px, calc((100vw - 1100px) / 2));
-
-    background: var(--farbe-oberflaeche);
-    border-bottom: 1px solid var(--farbe-rahmen);
-}
-
-header h2 {
-    margin: 0;
-    font-size: 21px;
-    font-weight: 750;
-    letter-spacing: -0.5px;
-    line-height: 1.3;
-}
-
-/* LOGOUT BUTTON */
-
-button {
-    padding: 12px 22px;
-
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 650;
-
-    color: var(--farbe-text);
-    background: var(--farbe-oberflaeche);
+        @import url("farben.css");
+
+        /* Grundlayout */
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        html {
+            font-family: -apple-system, BlinkMacSystemFont,
+                "Segoe UI", Inter, Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: var(--farbe-text);
+            background: var(--farbe-hintergrund);
+        }
+
+        /* Kopfzeile */
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+
+            width: 100%;
+            min-height: 88px;
+            padding: 20px max(28px, calc((100vw - 1100px) / 2));
+
+            background: var(--farbe-oberflaeche);
+            border-bottom: 1px solid var(--farbe-rahmen);
+        }
+
+        header h2 {
+            margin: 0;
+            font-size: 21px;
+            font-weight: 750;
+            letter-spacing: -0.5px;
+            line-height: 1.3;
+        }
+
+        /* Buttons */
+
+        button {
+            padding: 12px 22px;
+
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 650;
+
+            color: var(--farbe-text);
+            background: var(--farbe-oberflaeche);
 
-    border: 1px solid var(--farbe-rahmen);
-    border-radius: 9px;
+            border: 1px solid var(--farbe-rahmen);
+            border-radius: 9px;
 
-    cursor: pointer;
+            cursor: pointer;
 
-    transition:
-        background 0.2s ease,
-        border-color 0.2s ease,
-        transform 0.2s ease;
-}
+            transition:
+                background 0.2s ease,
+                border-color 0.2s ease,
+                transform 0.2s ease;
+        }
 
-button:hover {
-    background: var(--farbe-oberflaeche-sanft);
-    border-color: var(--farbe-primaer);
-}
+        button:hover {
+            background: var(--farbe-oberflaeche-sanft);
+            border-color: var(--farbe-primaer);
+        }
 
-button:active {
-    transform: translateY(1px);
-}
+        button:active {
+            transform: translateY(1px);
+        }
 
-button:focus-visible {
-    outline: 3px solid var(--farbe-fokus);
-    outline-offset: 3px;
-}
+        button:focus-visible {
+            outline: 3px solid var(--farbe-fokus);
+            outline-offset: 3px;
+        }
 
-/* HAUPTBEREICH */
+        /* Inhaltsbereich */
 
-main {
-    width: 100%;
-    max-width: 1100px;
+        main {
+            width: 100%;
+            max-width: 1100px;
 
-    margin: 0 auto;
-    padding: 55px 28px 90px;
-}
+            margin: 0 auto;
+            padding: 55px 28px 90px;
+        }
 
-main h3 {
-    margin: 0 0 30px;
+        main h3 {
+            margin: 0 0 30px;
 
-    font-size: 23px;
-    font-weight: 750;
-    letter-spacing: -0.6px;
-    line-height: 1.35;
-}
+            font-size: 23px;
+            font-weight: 750;
+            letter-spacing: -0.6px;
+            line-height: 1.35;
+        }
 
-/* KOPFZEILE MIT "GEFÜHRTE STAMMDATENERSTELLUNG" */
+        /* Überschrift und geführte Stammdatenerstellung */
 
-.stammdaten_kopf {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px 20px;
+        .stammdaten_kopf {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px 20px;
 
-    margin: 0 0 30px;
-}
+            margin: 0 0 30px;
+        }
 
-.stammdaten_kopf h3 {
-    margin: 0;
-}
+        .stammdaten_kopf h3 {
+            margin: 0;
+        }
 
-button.primaer {
-    color: #fff;
-    background: var(--farbe-primaer);
-    border-color: var(--farbe-primaer);
-}
+        button.primaer {
+            color: #fff;
+            background: var(--farbe-primaer);
+            border-color: var(--farbe-primaer);
+        }
 
-button.primaer:hover {
-    background: var(--farbe-primaer-dunkel);
-    border-color: var(--farbe-primaer-dunkel);
-}
+        button.primaer:hover {
+            background: var(--farbe-primaer-dunkel);
+            border-color: var(--farbe-primaer-dunkel);
+        }
 
-/* STAMMDATEN CONTAINER */
+        /* Raster der Stammdaten */
 
-.stammdaten_container {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
+        .stammdaten_container {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
 
-    width: 100%;
-}
+            width: 100%;
+        }
 
-/* STAMMDATEN KACHELN */
+        /* Stammdaten-Kacheln */
 
-.stammdaten {
-    position: relative;
+        .stammdaten {
+            position: relative;
 
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
 
-    min-height: 110px;
-    width: 100%;
+            min-height: 110px;
+            width: 100%;
 
-    margin: 0;
-    padding: 26px 32px;
+            margin: 0;
+            padding: 26px 32px;
 
-    background: var(--farbe-oberflaeche);
+            background: var(--farbe-oberflaeche);
 
-    border: 1px solid var(--farbe-rahmen);
-    border-radius: 14px;
+            border: 1px solid var(--farbe-rahmen);
+            border-radius: 14px;
 
-    box-shadow:
-        0 5px 20px var(--farbe-schatten);
+            box-shadow:
+                0 5px 20px var(--farbe-schatten);
 
-    cursor: pointer;
+            cursor: pointer;
 
-    overflow: hidden;
+            overflow: hidden;
 
-    transition:
-        background-color 0.2s ease,
-        border-color 0.2s ease,
-        box-shadow 0.2s ease,
-        transform 0.2s ease;
-}
+            transition:
+                background-color 0.2s ease,
+                border-color 0.2s ease,
+                box-shadow 0.2s ease,
+                transform 0.2s ease;
+        }
 
-/* GELBER AKZENT LINKS */
+        /* Akzent am linken Rand */
 
-.stammdaten::before {
-    content: "";
+        .stammdaten::before {
+            content: "";
 
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
 
-    width: 5px;
+            width: 5px;
 
-    background: var(--farbe-primaer);
-}
+            background: var(--farbe-primaer);
+        }
 
-/* PFEIL RECHTS */
+        /* Pfeil am rechten Rand */
 
-.stammdaten::after {
-    content: "";
+        .stammdaten::after {
+            content: "";
 
-    position: absolute;
-    right: 29px;
-    top: 50%;
+            position: absolute;
+            right: 29px;
+            top: 50%;
 
-    width: 9px;
-    height: 9px;
+            width: 9px;
+            height: 9px;
 
-    border-right: 2px solid var(--farbe-primaer-dunkel);
-    border-top: 2px solid var(--farbe-primaer-dunkel);
+            border-right: 2px solid var(--farbe-primaer-dunkel);
+            border-top: 2px solid var(--farbe-primaer-dunkel);
 
-    transform: translateY(-50%) rotate(45deg);
+            transform: translateY(-50%) rotate(45deg);
 
-    transition: right 0.2s ease;
-}
+            transition: right 0.2s ease;
+        }
 
-/* HOVER EFFEKT */
+        /* Hover-Zustand */
 
-.stammdaten:hover {
-    background: var(--farbe-oberflaeche-sanft);
-    border-color: var(--farbe-primaer);
+        .stammdaten:hover {
+            background: var(--farbe-oberflaeche-sanft);
+            border-color: var(--farbe-primaer);
 
-    box-shadow:
-        0 8px 26px var(--farbe-schatten);
+            box-shadow:
+                0 8px 26px var(--farbe-schatten);
 
-    transform: translateY(-2px);
-}
+            transform: translateY(-2px);
+        }
 
-.stammdaten:hover::after {
-    right: 25px;
-}
+        .stammdaten:hover::after {
+            right: 25px;
+        }
 
-/* TITEL DER KACHELN */
+        /* Kacheltitel */
 
-.stammdaten h4 {
-    margin: 0;
+        .stammdaten h4 {
+            margin: 0;
 
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: -0.3px;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
 
-    color: var(--farbe-text);
-}
+            color: var(--farbe-text);
+        }
 
-/* ANZAHL-BADGE (0) */
+        /* Anzahl der Einträge */
 
-.stammdaten p {
-    margin: 0 30px 0 auto;
+        .stammdaten p {
+            margin: 0 30px 0 auto;
 
-    padding: 7px 13px;
+            padding: 7px 13px;
 
-    font-size: 13px;
-    font-weight: 700;
+            font-size: 13px;
+            font-weight: 700;
 
-    color: var(--farbe-primaer-dunkel);
-    background: var(--farbe-primaer-hell);
+            color: var(--farbe-primaer-dunkel);
+            background: var(--farbe-primaer-hell);
 
-    border-radius: 8px;
-}
+            border-radius: 8px;
+        }
 
-/* LETZTE KACHEL: FRISTEN */
+        /* Fristen über die gesamte Breite */
 
-.stammdaten:last-child {
-    grid-column: 1 / -1;
-}
+        .stammdaten:last-child {
+            grid-column: 1 / -1;
+        }
 
-/* TABLET */
+        /* Tablet */
 
-@media (max-width: 800px) {
+        @media (max-width: 800px) {
+            header {
+                padding: 20px 24px;
+            }
 
-    header {
-        padding: 20px 24px;
-    }
+            main {
+                padding: 40px 24px 70px;
+            }
 
-    main {
-        padding: 40px 24px 70px;
-    }
+            .stammdaten_container {
+                gap: 14px;
+            }
 
-    .stammdaten_container {
-        gap: 14px;
-    }
+            .stammdaten {
+                padding: 23px 22px;
+            }
 
-    .stammdaten {
-        padding: 23px 22px;
-    }
+            .stammdaten h4 {
+                font-size: 16px;
+            }
+        }
 
-    .stammdaten h4 {
-        font-size: 16px;
-    }
-}
+        /* Smartphone */
 
-/* SMARTPHONE */
+        @media (max-width: 600px) {
+            header {
+                min-height: 74px;
+                padding: 16px 18px;
+            }
 
-@media (max-width: 600px) {
+            header h2 {
+                font-size: 16px;
+            }
 
-    header {
-        min-height: 74px;
-        padding: 16px 18px;
-    }
+            button {
+                padding: 10px 15px;
+                font-size: 12px;
+            }
 
-    header h2 {
-        font-size: 16px;
-    }
+            main {
+                padding: 32px 18px 60px;
+            }
 
-    button {
-        padding: 10px 15px;
-        font-size: 12px;
-    }
+            main h3 {
+                font-size: 20px;
+                margin-bottom: 24px;
+            }
 
-    main {
-        padding: 32px 18px 60px;
-    }
+            .stammdaten_container {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
 
-    main h3 {
-        font-size: 20px;
-        margin-bottom: 24px;
-    }
+            .stammdaten {
+                min-height: 84px;
+                padding: 20px 24px;
+                border-radius: 11px;
+            }
 
-    .stammdaten_container {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
+            .stammdaten:last-child {
+                grid-column: auto;
+            }
 
-    .stammdaten {
-        min-height: 84px;
-        padding: 20px 24px;
-        border-radius: 11px;
-    }
+            .stammdaten h4 {
+                font-size: 16px;
+            }
 
-    .stammdaten:last-child {
-        grid-column: auto;
-    }
+            .stammdaten::after {
+                right: 24px;
+            }
 
-    .stammdaten h4 {
-        font-size: 16px;
-    }
+            .stammdaten p {
+                margin-right: 25px;
+            }
+        }
 
-    .stammdaten::after {
-        right: 24px;
-    }
+        /* Schuljahrauswahl und Archiv */
 
-    .stammdaten p {
-        margin-right: 25px;
-    }
-}
+        .schuljahr_leiste {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px 14px;
 
-/* SCHULJAHR-AUSWAHL UND ARCHIV */
+            margin: 0 0 28px;
+            padding: 16px 20px;
 
-.schuljahr_leiste {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 12px 14px;
+            background: var(--farbe-karte);
+            border: 1px solid var(--farbe-rahmen);
+            border-radius: 12px;
+        }
 
-    margin: 0 0 28px;
-    padding: 16px 20px;
+        .schuljahr_leiste label {
+            font-size: 13px;
+            font-weight: 650;
+        }
 
-    background: var(--farbe-karte);
-    border: 1px solid var(--farbe-rahmen);
-    border-radius: 12px;
-}
+        .schuljahr_leiste select,
+        dialog select {
+            min-height: 40px;
+            padding: 8px 12px;
 
-.schuljahr_leiste label {
-    font-size: 13px;
-    font-weight: 650;
-}
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
 
-.schuljahr_leiste select,
-dialog select {
-    min-height: 40px;
-    padding: 8px 12px;
+            color: var(--farbe-text);
+            background: var(--farbe-weiss);
 
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 600;
+            border: 1px solid var(--farbe-rahmen-stark);
+            border-radius: 9px;
 
-    color: var(--farbe-text);
-    background: var(--farbe-weiss);
+            cursor: pointer;
+        }
 
-    border: 1px solid var(--farbe-rahmen-stark);
-    border-radius: 9px;
+        .schuljahr_leiste button {
+            margin-left: auto;
+        }
 
-    cursor: pointer;
-}
+        #archiv-hinweis {
+            margin: 0 0 28px;
+            padding: 13px 18px;
 
-.schuljahr_leiste button {
-    margin-left: auto;
-}
+            font-size: 14px;
 
-#archiv-hinweis {
-    margin: 0 0 28px;
-    padding: 13px 18px;
+            color: var(--farbe-status-hoch-text);
+            background: var(--farbe-status-hoch-hintergrund);
 
-    font-size: 14px;
+            border-radius: 9px;
+        }
 
-    color: var(--farbe-status-hoch-text);
-    background: var(--farbe-status-hoch-hintergrund);
+        #archiv-hinweis[hidden],
+        button[hidden] {
+            display: none;
+        }
 
-    border-radius: 9px;
-}
+        body.archiv .nur-aktuell {
+            display: none !important;
+        }
 
-#archiv-hinweis[hidden],
-button[hidden] {
-    display: none;
-}
+        /* Ohne Fristen-Kachel: Abteilungen nicht über die ganze Breite ziehen */
+        body.archiv .stammdaten:nth-last-child(2) {
+            grid-column: auto;
+        }
 
-body.archiv .nur-aktuell {
-    display: none !important;
-}
+        /* Übernahmedialog */
 
-/* Ohne Fristen-Kachel: Abteilungen nicht über die ganze Breite ziehen */
-body.archiv .stammdaten:nth-last-child(2) {
-    grid-column: auto;
-}
+        dialog {
+            width: min(460px, calc(100vw - 32px));
+            padding: 0;
 
-/* DIALOG */
+            color: var(--farbe-text);
+            background: var(--farbe-karte);
 
-dialog {
-    width: min(460px, calc(100vw - 32px));
-    padding: 0;
+            border: 1px solid var(--farbe-rahmen);
+            border-radius: 15px;
 
-    color: var(--farbe-text);
-    background: var(--farbe-karte);
+            box-shadow: 0 12px 40px var(--farbe-schatten-stark);
+        }
 
-    border: 1px solid var(--farbe-rahmen);
-    border-radius: 15px;
+        dialog::backdrop {
+            background: rgb(41 42 38 / 35%);
+        }
 
-    box-shadow: 0 12px 40px var(--farbe-schatten-stark);
-}
+        dialog form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
 
-dialog::backdrop {
-    background: rgb(41 42 38 / 35%);
-}
+            padding: 26px 28px;
+        }
 
-dialog form {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
+        dialog h4 {
+            margin: 0;
+            font-size: 19px;
+            font-weight: 750;
+        }
 
-    padding: 26px 28px;
-}
+        dialog p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--farbe-text-sekundaer);
+        }
 
-dialog h4 {
-    margin: 0;
-    font-size: 19px;
-    font-weight: 750;
-}
+        dialog .feld label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 650;
+        }
 
-dialog p {
-    margin: 0;
-    font-size: 13px;
-    color: var(--farbe-text-sekundaer);
-}
+        dialog select {
+            width: 100%;
+        }
 
-dialog .feld label {
-    display: block;
-    margin-bottom: 8px;
-    font-size: 13px;
-    font-weight: 650;
-}
+        #kategorien {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
 
-dialog select {
-    width: 100%;
-}
+        #kategorien label {
+            display: flex;
+            align-items: center;
+            gap: 9px;
 
-#kategorien {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-}
+            padding: 10px 13px;
 
-#kategorien label {
-    display: flex;
-    align-items: center;
-    gap: 9px;
+            font-size: 14px;
+            font-weight: 600;
 
-    padding: 10px 13px;
+            background: var(--farbe-karte-sanft);
+            border: 1px solid var(--farbe-rahmen);
+            border-radius: 9px;
 
-    font-size: 14px;
-    font-weight: 600;
+            cursor: pointer;
+        }
 
-    background: var(--farbe-karte-sanft);
-    border: 1px solid var(--farbe-rahmen);
-    border-radius: 9px;
+        #kategorien label:has(input:disabled) {
+            opacity: 0.5;
+            cursor: default;
+        }
 
-    cursor: pointer;
-}
+        #kategorien span {
+            color: var(--farbe-text-sekundaer);
+        }
 
-#kategorien label:has(input:disabled) {
-    opacity: 0.5;
-    cursor: default;
-}
+        #kategorien input {
+            accent-color: var(--farbe-primaer-dunkel);
+        }
 
-#kategorien span {
-    color: var(--farbe-text-sekundaer);
-}
+        .dialog_leiste {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
 
-#kategorien input {
-    accent-color: var(--farbe-primaer-dunkel);
-}
+        @media (max-width: 600px) {
+            .schuljahr_leiste button {
+                margin-left: 0;
+                width: 100%;
+            }
 
-.dialog_leiste {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-}
+            #kategorien {
+                grid-template-columns: 1fr;
+            }
+        }
 
-@media (max-width: 600px) {
-    .schuljahr_leiste button {
-        margin-left: 0;
-        width: 100%;
-    }
+        /* Reduzierte Animationen */
 
-    #kategorien {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* REDUZIERTE ANIMATIONEN */
-
-@media (prefers-reduced-motion: reduce) {
-
-    *,
-    *::before,
-    *::after {
-        transition: none !important;
-    }
-}
-
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                transition: none !important;
+            }
+        }
     </style>
 </head>
 <body>
-<header>
-    <h2 id="titel">Admin | Schuljahr 2026/27</h2>
-    <button onclick="logout()">Logout</button>
-</header>
-<main>
-    <div class="schuljahr_leiste">
-        <label for="schuljahr">Schuljahr</label>
-        <select id="schuljahr" onchange="schuljahrWechseln(this.value)"></select>
-        <button id="uebernehmen-oeffnen" onclick="dialogOeffnen()" hidden>Daten übernehmen</button>
-    </div>
-
-    <p id="archiv-hinweis" hidden>
-        <strong>Archiv – nur lesbar.</strong> Das Schuljahr <span id="archiv-jahr"></span>
-        ist abgeschlossen und kann nicht mehr bearbeitet werden. Die Daten können aber
-        ins aktuelle Schuljahr übernommen werden.
-    </p>
-
-    <div class="stammdaten_kopf">
-        <h3 id="ueberschrift">Stammdaten für das kommende Schuljahr</h3>
-        <button class="primaer nur-aktuell" onclick="redirect('Admin_Abteilungen_Ansicht.html?gefuehrt=1')">
-            Geführte Stammdatenerstellung
-        </button>
-    </div>
-    <div class="stammdaten_container">
-        <div class="stammdaten" onclick="redirect('Admin_Klassen_Ansicht.html')">
-            <h4>Klassen</h4>
-            <p id="anzahl-klassen">(0)</p>
+    <header>
+        <h2 id="titel">Admin | Schuljahr 2026/27</h2>
+        <button onclick="logout()">Logout</button>
+    </header>
+    <main>
+        <div class="schuljahr_leiste">
+            <label for="schuljahr">Schuljahr</label>
+            <select id="schuljahr" onchange="schuljahrWechseln(this.value)"></select>
+            <button id="uebernehmen-oeffnen" onclick="dialogOeffnen()" hidden>Daten übernehmen</button>
         </div>
 
-        <div class="stammdaten" onclick="redirect('Admin_Lehrer_Ansicht.html')">
-            <h4>Lehrer</h4>
-            <p id="anzahl-lehrer">(0)</p>
+        <p id="archiv-hinweis" hidden>
+            <strong>Archiv – nur lesbar.</strong> Das Schuljahr <span id="archiv-jahr"></span>
+            ist abgeschlossen und kann nicht mehr bearbeitet werden. Die Daten können aber
+            ins aktuelle Schuljahr übernommen werden.
+        </p>
+
+        <div class="stammdaten_kopf">
+            <h3 id="ueberschrift">Stammdaten für das kommende Schuljahr</h3>
+            <button class="primaer nur-aktuell" onclick="redirect('Admin_Abteilungen_Ansicht.html?gefuehrt=1')">
+                Geführte Stammdatenerstellung
+            </button>
         </div>
+        <div class="stammdaten_container">
+            <div class="stammdaten" onclick="redirect('Admin_Klassen_Ansicht.html')">
+                <h4>Klassen</h4>
+                <p id="anzahl-klassen">(0)</p>
+            </div>
 
-        <div class="stammdaten" onclick="redirect('Admin_Faecher_Ansicht.html')">
-            <h4>Fächer</h4>
-            <p id="anzahl-faecher">(0)</p>
+            <div class="stammdaten" onclick="redirect('Admin_Lehrer_Ansicht.html')">
+                <h4>Lehrer</h4>
+                <p id="anzahl-lehrer">(0)</p>
+            </div>
+
+            <div class="stammdaten" onclick="redirect('Admin_Faecher_Ansicht.html')">
+                <h4>Fächer</h4>
+                <p id="anzahl-faecher">(0)</p>
+            </div>
+
+            <div class="stammdaten" onclick="redirect('Admin_Abteilungen_Ansicht.html')">
+                <h4>Abteilungen</h4>
+                <p id="anzahl-abteilungen">(0)</p>
+            </div>
+
+            <div class="stammdaten" onclick="redirect('Fristen_ansicht.html')">
+                <h4>Fristen</h4>
+            </div>
         </div>
+    </main>
 
-        <div class="stammdaten" onclick="redirect('Admin_Abteilungen_Ansicht.html')">
-            <h4>Abteilungen</h4>
-            <p id="anzahl-abteilungen">(0)</p>
-        </div>
+    <dialog id="dialog">
+        <form method="dialog" onsubmit="dialogUebernehmen(event)">
+            <h4>Daten ins Schuljahr <span id="ziel-jahr"></span> übernehmen</h4>
 
-        <div class="stammdaten" onclick="redirect('Fristen_ansicht.html')">
-            <h4>Fristen</h4>
-        </div>
-    </div>
-</main>
+            <div class="feld">
+                <label for="quelle">Aus Schuljahr</label>
+                <select id="quelle" onchange="dialogKategorienAnzeigen()"></select>
+            </div>
 
-<dialog id="dialog">
-    <form method="dialog" onsubmit="dialogUebernehmen(event)">
-        <h4>Daten ins Schuljahr <span id="ziel-jahr"></span> übernehmen</h4>
+            <div class="feld">
+                <label>Bereiche</label>
+                <div id="kategorien"></div>
+            </div>
 
-        <div class="feld">
-            <label for="quelle">Aus Schuljahr</label>
-            <select id="quelle" onchange="dialogKategorienAnzeigen()"></select>
-        </div>
+            <p>Bereits vorhandene Einträge (gleicher Name bzw. gleiches Kürzel) werden nicht doppelt angelegt.</p>
 
-        <div class="feld">
-            <label>Bereiche</label>
-            <div id="kategorien"></div>
-        </div>
-
-        <p>Bereits vorhandene Einträge (gleicher Name bzw. gleiches Kürzel) werden nicht doppelt angelegt.</p>
-
-        <div class="dialog_leiste">
-            <button type="button" onclick="document.getElementById('dialog').close()">Abbrechen</button>
-            <button type="submit" class="primaer">Übernehmen</button>
-        </div>
-    </form>
-</dialog>
+            <div class="dialog_leiste">
+                <button type="button" onclick="document.getElementById('dialog').close()">Abbrechen</button>
+                <button type="submit" class="primaer">Übernehmen</button>
+            </div>
+        </form>
+    </dialog>
 </body>
 </html>
