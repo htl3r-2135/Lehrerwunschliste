@@ -9,13 +9,26 @@
             window.location.href = file;
         }
 
+        function fehlerAnzeigen(text) {
+            const meldung = document.getElementById("fehlermeldung");
+            meldung.textContent = text;
+            meldung.hidden = false;
+        }
+
+        function fehlerLoeschen() {
+            const meldung = document.getElementById("fehlermeldung");
+            meldung.textContent = "";
+            meldung.hidden = true;
+        }
+
         function login() {
+            fehlerLoeschen();
+
             const email = document.getElementById("email").value.trim();
             const passwort = document.getElementById("passwort").value;
 
             if (!emailValidator() || passwort === "") {
-                console.log(emailValidator());
-                alert("Bitte valide E-Mail und Passwort eingeben");
+                fehlerAnzeigen("Bitte valide E-Mail und Passwort eingeben");
                 return;
             }
 
@@ -30,16 +43,17 @@
                     redirect("Lehrer_Ansicht.html");
                 break;
                 default:
-                    alert("Diesen User gibt es nicht. Bitte überprüfen Sie die E-Mail-Adresse.");
+                    fehlerAnzeigen("Diesen User gibt es nicht. Bitte überprüfen Sie die E-Mail-Adresse.");
                 break;
             }    
             
         }
 
         function passwortZuruecksetzen() {
-            const email = document.getElementById("email").value.trim();
+            fehlerLoeschen();
+
             if (!emailValidator()) {
-                alert("Bitte geben Sie Ihre E-Mail-Adresse ein, um das Passwort zurückzusetzen.");
+                fehlerAnzeigen("Bitte geben Sie Ihre E-Mail-Adresse ein, um das Passwort zurückzusetzen.");
                 return;
             }else {
                 redirect("Passwort_aendern.html");
@@ -57,7 +71,7 @@
 
         function microsoftLogin() {
             // TODO: Microsoft-Anmeldung anbinden
-            alert("Microsoft-Anmeldung ist noch nicht verbunden");
+            fehlerAnzeigen("Microsoft-Anmeldung ist noch nicht verbunden");
         }
     </script>
     <style>
@@ -218,6 +232,30 @@ main {
 
     box-shadow:
         0 0 0 3px var(--farbe-primaer-hell);
+}
+
+/* ==========================================
+   FEHLERMELDUNG
+   ========================================== */
+
+.fehlermeldung {
+    margin: 4px 0 0;
+    padding: 12px 15px;
+
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.45;
+
+    color: var(--farbe-fehler, #b42318);
+    background: var(--farbe-fehler-hell, rgba(180, 35, 24, 0.08));
+
+    border: 1px solid var(--farbe-fehler, #b42318);
+    border-left-width: 4px;
+    border-radius: 9px;
+}
+
+.fehlermeldung[hidden] {
+    display: none;
 }
 
 /* ==========================================
@@ -432,14 +470,16 @@ button:focus-visible {
 
         <div class="feld">
             <label for="email">E-Mail</label>
-            <input type="email" id="email" autocomplete="username">
+            <input type="email" id="email" autocomplete="username" oninput="fehlerLoeschen()">
         </div>
 
         <div class="feld">
             <label for="passwort">Passwort</label>
-            <input type="password" id="passwort" autocomplete="current-password">
+            <input type="password" id="passwort" autocomplete="current-password" oninput="fehlerLoeschen()">
             <button class="button_klein" onclick="passwortZuruecksetzen()">Passwort zurücksetzen</button>
         </div>
+
+        <p class="fehlermeldung" id="fehlermeldung" role="alert" hidden></p>
 
         <div class="buttons">
             <button class="button_login" onclick="login()">Login</button>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <title>Fachverantwortliche(r) Übersicht</title>
+    <title>Fachverantwortliche Ansicht</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>
@@ -15,16 +15,16 @@
 
         // Beispieldaten (spaeter vom Server)
         const zeilen = [
-            { klasse: "5BI", fach: "MEDT", eingetragen: 2, konflikte: 1, benoetigt: 1, ausgewaehlt: true },
-            { klasse: "5CN", fach: "AM",   eingetragen: 0, konflikte: 0, benoetigt: 1, ausgewaehlt: false },
-            { klasse: "4CN", fach: "AM",   eingetragen: 0, konflikte: 0, benoetigt: 1, ausgewaehlt: false },
-            { klasse: "3AI", fach: "MEDT", eingetragen: 1, konflikte: 0, benoetigt: 1, ausgewaehlt: false },
-            { klasse: "4BI", fach: "MEDT", eingetragen: 0, konflikte: 0, benoetigt: 2, ausgewaehlt: false },
-            { klasse: "2CI", fach: "MEDT", eingetragen: 3, konflikte: 2, benoetigt: 1, ausgewaehlt: false },
-            { klasse: "5AI", fach: "SYT",  eingetragen: 2, konflikte: 0, benoetigt: 2, ausgewaehlt: false },
-            { klasse: "3BN", fach: "SYT",  eingetragen: 1, konflikte: 0, benoetigt: 3, ausgewaehlt: false },
-            { klasse: "1AI", fach: "AM",   eingetragen: 2, konflikte: 1, benoetigt: 2, ausgewaehlt: false },
-            { klasse: "2AI", fach: "AM",   eingetragen: 1, konflikte: 0, benoetigt: 1, ausgewaehlt: false }
+            { klasse: "5BI", fach: "MEDT", eingetragen: 2, konflikte: 1, benoetigt: 1 },
+            { klasse: "5CN", fach: "AM",   eingetragen: 0, konflikte: 0, benoetigt: 1 },
+            { klasse: "4CN", fach: "AM",   eingetragen: 0, konflikte: 0, benoetigt: 1 },
+            { klasse: "3AI", fach: "MEDT", eingetragen: 1, konflikte: 0, benoetigt: 1 },
+            { klasse: "4BI", fach: "MEDT", eingetragen: 0, konflikte: 0, benoetigt: 2 },
+            { klasse: "2CI", fach: "MEDT", eingetragen: 3, konflikte: 2, benoetigt: 1 },
+            { klasse: "5AI", fach: "SYT",  eingetragen: 2, konflikte: 0, benoetigt: 2 },
+            { klasse: "3BN", fach: "SYT",  eingetragen: 1, konflikte: 0, benoetigt: 3 },
+            { klasse: "1AI", fach: "AM",   eingetragen: 2, konflikte: 1, benoetigt: 2 },
+            { klasse: "2AI", fach: "AM",   eingetragen: 1, konflikte: 0, benoetigt: 1 }
         ];
 
         // Status einer Zeile: "konflikt", "offen" oder "vollstaendig"
@@ -104,7 +104,7 @@
 
             daten.forEach(z => {
                 const tr = document.createElement("tr");
-                if (z.ausgewaehlt) tr.className = "ausgewaehlt";
+                if (z.konflikte > 0) tr.className = "ueberbelegt";
                 tr.onclick = () => redirect(
                     "Fachverantwortlicher_Zuteilung.html?klasse=" + encodeURIComponent(z.klasse) +
                     "&fach=" + encodeURIComponent(z.fach) +
@@ -429,13 +429,13 @@ tbody tr:hover {
     background: var(--farbe-oberflaeche-sanft);
 }
 
-/* AUSGEWAEHLTE ZEILE (GRUEN) */
+/* UEBERBELEGTE ZEILE MIT ⚠ (GRUEN) */
 
-tbody tr.ausgewaehlt {
+tbody tr.ueberbelegt {
     background: rgba(46, 160, 67, 0.15);
 }
 
-tbody tr.ausgewaehlt:hover {
+tbody tr.ueberbelegt:hover {
     background: rgba(46, 160, 67, 0.25);
 }
 
@@ -560,7 +560,7 @@ tbody tr.ausgewaehlt:hover {
         </table>
     </div>
 
-    <p class="hinweis">Grün = ausgewählt, ⚠ = Überbelegung / Konflikt</p>
+    <p class="hinweis">Grün = Überbelegung / Konflikt (⚠)</p>
 </main>
 </body>
 </html>
