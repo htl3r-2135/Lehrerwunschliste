@@ -61,6 +61,9 @@ function submit() {
       <p v-if="teacherStore.error" class="error">
         {{ teacherStore.error }}
       </p>
+      <p v-if="teacherStore.message" class="success">
+        {{ teacherStore.message }}
+      </p>
 
       <div class="form-actions">
         <button>

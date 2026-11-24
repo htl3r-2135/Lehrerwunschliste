@@ -12,6 +12,7 @@ export interface Teacher {
 export const useTeacherStore = defineStore('teacher', () => {
   const teachers = ref<Teacher[]>([])
   const loading = ref(false)
+  const message = ref('')
   const error = ref('')
 
   async function createTeacher(teacher: Omit<Teacher, 'id'>) {
@@ -19,7 +20,7 @@ export const useTeacherStore = defineStore('teacher', () => {
     error.value = ''
 
     try {
-      const res = await fetch('/api/teacher', {
+      const res = await fetch('/api/teacher/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -28,11 +29,13 @@ export const useTeacherStore = defineStore('teacher', () => {
       })
 
       if (!res.ok) {
-        throw new Error('Fehler beim Erstellen des Lehrers.')
+        console.error('Status:', res.status)
+        error.value = 'Fehler beim Erstellen des Lehrers.'
       }
 
       const data = await res.json()
       teachers.value.push(data)
+      message.value = data.message
 
     } catch (e) {
       console.error('Error:', e)
@@ -42,10 +45,5 @@ export const useTeacherStore = defineStore('teacher', () => {
     }
   }
 
-  return {
-    teachers,
-    loading,
-    error,
-    createTeacher
-  }
+  return { teachers, loading, error, message, createTeacher }
 })

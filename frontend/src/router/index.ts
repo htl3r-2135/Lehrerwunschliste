@@ -4,7 +4,8 @@ import TeacherCreateView from '../views/TeacherCreateView.vue'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: '/lehrer/neu', 
+    { 
+      path: '/lehrer/neu', 
       name: 'teacher-create', 
       component: TeacherCreateView 
     },
