@@ -43,3 +43,4 @@ Thumbs.db
 # TypeScript and lint caches
 *.tsbuildinfo
 .eslintcache
+node_modules/
