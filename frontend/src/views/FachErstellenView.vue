@@ -1,35 +1,70 @@
 <script setup>
-  import { ref } from 'vue'
-  import { useRouter } from 'vue-router'
-  import AppHeader from '@/components/AppHeader.vue'
-  import AppFooter from '@/components/AppFooter.vue'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import AppHeader from '@/components/AppHeader.vue'
+import AppFooter from '@/components/AppFooter.vue'
 
-  const router = useRouter()
+const router = useRouter()
 
-  const alleAbteilungen = ['WEBT', 'Informationstechnologie', 'Mechatronik']
+const alleAbteilungen = [
+  'WEBT',
+  'Informationstechnologie',
+  'Mechatronik'
+]
 
-  const name = ref('')
-  const art = ref('Theorie/Labor')
-  const abteilungen = ref([])
-  const stufen = ref([])
-  const wochenstd = ref(null)
-  const teiler = ref(null)
+const name = ref('')
+const art = ref('Theorie/Labor')
+const abteilungen = ref([])
+const stufen = ref([])
+const wochenstd = ref(null)
+const teiler = ref(null)
 
-  function speichern() {
-    const fach = {
-      name: name.value,
-      art: art.value,
-      abteilungen: abteilungen.value,
-      stufen: stufen.value,
-      wochenstd: wochenstd.value,
-      teiler: teiler.value
-    }
-    console.log(fach) // hier an Backend / Store schicken
+const fehler = ref('')
+
+function speichern() {
+  fehler.value = ''
+
+  if (!name.value.trim()) {
+    fehler.value = 'Bitte einen Fachnamen eingeben.'
+    return
   }
 
-  function logout() { router.push('/anmeldung') }
-  function zurueck() { router.push('/admin/klassen') }
-  function weiter() { router.push('/admin/lehrer') }
+  if (!Number.isInteger(wochenstd.value)) {
+    fehler.value = 'Bitte gültige Wochenstunden angeben.'
+    return
+  }
+
+  if (abteilungen.value.length === 0) {
+    fehler.value = 'Bitte mindestens eine Abteilung auswählen.'
+    return
+  }
+
+  if (stufen.value.length === 0) {
+    fehler.value = 'Bitte mindestens eine Schulstufe auswählen.'
+    return
+  }
+
+  const fach = {
+    name: name.value.trim(),
+    art: art.value,
+    abteilungen: [...abteilungen.value],
+    stufen: [...stufen.value],
+    wochenstd: wochenstd.value,
+    teiler: teiler.value === '' ? null : teiler.value
+  }
+}
+
+function logout() {
+  router.push('/anmeldung')
+}
+
+function zurueck() {
+  router.push('/admin/klassen')
+}
+
+function weiter() {
+  router.push('/admin/lehrer')
+}
 </script>
 
 <template>
@@ -79,6 +114,10 @@
             <input id="teiler" v-model.number="teiler" type="number" min="1" max="40" placeholder="z. B. 6">
           </div>
         </div>
+
+        <p v-if="fehler" class="fehlermeldung" role="alert">
+          {{ fehler }}
+        </p>
 
         <div class="leiste">
           <button class="primaer" type="submit">Speichern</button>
@@ -185,5 +224,15 @@
     border-radius: 9px;
     font-weight: 750;
     cursor: pointer;
+  }
+
+  .fehlermeldung {
+    color: #b91c1c;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 9px;
+    padding: 11px 15px;
+    font-size: 13px;
+    margin-bottom: 16px;
   }
 </style>
