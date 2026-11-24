@@ -1,0 +1,45 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+!template-env
+
+# Frontend dependencies and build output
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.vite-temp/
+frontend/coverage/
+frontend/*.local
+
+# Backend dependencies and generated files
+backend/vendor/
+backend/var/
+backend/public/bundles/
+backend/.phpunit.cache/
+backend/.phpunit.result.cache
+backend/phpunit.xml
+backend/phpunit.xml.dist
+
+# Symfony local configuration
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# Logs and caches
+*.log
+*.pid
+.cache/
+.DS_Store
+Thumbs.db
+
+# IDE and editor settings
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# TypeScript and lint caches
+*.tsbuildinfo
+.eslintcache
