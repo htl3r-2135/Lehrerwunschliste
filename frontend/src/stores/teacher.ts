@@ -12,58 +12,25 @@ export interface Teacher {
 
 export const useTeacherStore = defineStore('teacher', () => {
   const teachers = ref<Teacher[]>([])
-  const loading = ref(false)
   const error = ref('')
 
-  const API = 'http://localhost:8000/api/teachers'
-
-  async function loadTeachers() {
-    loading.value = true
+  function createTeacher(teacher: Omit<Teacher, 'id'>) {
     error.value = ''
 
-    try {
-      const response = await fetch(API)
-
-      if (!response.ok) {
-        throw new Error('Lehrer konnten nicht geladen werden.')
-      }
-
-      teachers.value = await response.json()
-    } catch (err) {
-      error.value = err instanceof Error
-        ? err.message
-        : 'Ein Fehler ist aufgetreten.'
+    if (teachers.value.some(t => t.abbreviation === teacher.abbreviation)) {
+      error.value = 'Dieses Lehrerkürzel existiert bereits.'
+      return
     }
 
-    loading.value = false
+    teachers.value.push({
+      id: Date.now(),
+      ...teacher
+    })
   }
 
-  async function createTeacher(teacher: Omit<Teacher, 'id'>) {
-    error.value = ''
-
-    try {
-      const response = await fetch(API, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(teacher)
-      })
-
-      if (!response.ok) {
-        throw new Error('Lehrer konnte nicht gespeichert werden.')
-      }
-
-      const newTeacher: Teacher = await response.json()
-
-      teachers.value.push(newTeacher)
-
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten.'
-
-      throw err
-    }
+  return {
+    teachers,
+    error,
+    createTeacher
   }
-
-  return { teachers,loading,error,loadTeachers,createTeacher }
 })
